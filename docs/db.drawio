@@ -1,0 +1,8 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="ERD" name="DB ERD">
+    <mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/>
+    <mxCell id="users" value="users: id, name, email, password, role" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1"><mxGeometry x="40" y="40" width="240" height="80" as="geometry"/></mxCell>
+    <mxCell id="news" value="news: id, title, body, published_at" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1"><mxGeometry x="340" y="40" width="260" height="80" as="geometry"/></mxCell>
+    </root></mxGraphModel>
+  </diagram>
+</mxfile>

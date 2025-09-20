@@ -1,0 +1,1 @@
+# Hospital Full Starter v2 — ดูโฟลเดอร์ docs/ สำหรับรายละเอียดทั้งหมด

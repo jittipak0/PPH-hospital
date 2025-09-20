@@ -1,0 +1,16 @@
+# /etc/systemd/system/laravel-queue.service
+[Unit]
+Description=Laravel Queue Worker
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+ExecStart=/usr/bin/php /var/www/hospital/backend/artisan queue:work --sleep=3 --tries=3 --timeout=90
+WorkingDirectory=/var/www/hospital/backend
+StandardOutput=append:/var/log/laravel-queue.log
+StandardError=append:/var/log/laravel-queue.err
+
+[Install]
+WantedBy=multi-user.target

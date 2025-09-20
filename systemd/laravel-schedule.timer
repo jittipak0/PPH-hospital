@@ -1,0 +1,11 @@
+# /etc/systemd/system/laravel-schedule.timer
+[Unit]
+Description=Run Laravel Scheduler every minute
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+Unit=laravel-schedule.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

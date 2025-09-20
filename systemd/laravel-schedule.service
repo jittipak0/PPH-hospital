@@ -1,0 +1,10 @@
+# /etc/systemd/system/laravel-schedule.service
+[Unit]
+Description=Laravel Schedule Runner
+
+[Service]
+User=www-data
+Group=www-data
+Type=oneshot
+ExecStart=/usr/bin/php /var/www/hospital/backend/artisan schedule:run
+WorkingDirectory=/var/www/hospital/backend
