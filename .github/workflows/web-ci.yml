@@ -1,6 +1,5 @@
 name: web-ci
 on: [push, pull_request]
-
 jobs:
   frontend:
     runs-on: ubuntu-latest
