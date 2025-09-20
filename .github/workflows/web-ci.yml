@@ -1,5 +1,6 @@
 name: web-ci
 on: [push, pull_request]
+
 jobs:
   frontend:
     runs-on: ubuntu-latest
@@ -29,20 +30,28 @@ jobs:
       - name: Install Composer deps
         run: composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Prepare .env (SQLite)
+      - name: Prepare env (dev .env + testing .env.testing)
         run: |
           cp .env.example .env
           php artisan key:generate
-          mkdir -p database && touch database/database.sqlite
-          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
-          sed -i 's|^DB_DATABASE=.*|DB_DATABASE=database/database.sqlite|' .env
-          sed -i 's/^DB_HOST=/#DB_HOST=/' .env
-          sed -i 's/^DB_PORT=/#DB_PORT=/' .env
-          sed -i 's/^DB_USERNAME=/#DB_USERNAME=/' .env
-          sed -i 's/^DB_PASSWORD=/#DB_PASSWORD=/' .env
+          mkdir -p database storage bootstrap/cache
+          chmod -R 777 storage bootstrap/cache
+          php artisan config:clear
 
-      - name: Migrate
-        run: php artisan migrate --force
+          # ใช้ SQLite in-memory สำหรับ test
+          cat > .env.testing <<'ENV'
+APP_ENV=testing
+APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+DB_CONNECTION=sqlite
+DB_DATABASE=:memory:
+ENV
+
+      - name: Run migrations (dev sqlite file)
+        run: |
+          mkdir -p database && touch database/database.sqlite
+          php -r "file_put_contents('.env', preg_replace('/^DB_CONNECTION=.*/m','DB_CONNECTION=sqlite', file_get_contents('.env')));"
+          php -r "file_put_contents('.env', preg_replace('#^DB_DATABASE=.*#m','DB_DATABASE=database/database.sqlite', file_get_contents('.env')));"
+          php artisan migrate --force
 
       - name: Run tests
         run: php artisan test -q
