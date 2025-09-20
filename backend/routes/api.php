@@ -1,2 +1,5 @@
+<?php
 
-Route::get('/health', fn()=>response()->json(['ok'=>true]));
+use Illuminate\Support\Facades\Route;
+
+Route::get('/health', fn () => response()->json(['ok' => true]));
