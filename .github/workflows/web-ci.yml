@@ -1,5 +1,6 @@
 name: web-ci
 on: [push, pull_request]
+
 jobs:
   frontend:
     runs-on: ubuntu-latest
@@ -12,12 +13,37 @@ jobs:
       - run: npm run build
       - uses: actions/upload-artifact@v4
         with: { name: frontend-dist, path: frontend/dist }
+
   backend-php:
     runs-on: ubuntu-latest
     defaults: { run: { working-directory: backend } }
     steps:
       - uses: actions/checkout@v4
-      - uses: php-actions/composer@v6
-        with: { php_version: '8.3', version: latest, args: '--no-interaction --no-progress' }
-      - name: PHPUnit (placeholder)
-        run: echo "Add backend tests once Laravel project is present"
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, curl, zip, pdo_sqlite, sqlite3, bcmath, intl
+          coverage: none
+
+      - name: Install Composer deps
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare .env (SQLite)
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          mkdir -p database && touch database/database.sqlite
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
+          sed -i 's|^DB_DATABASE=.*|DB_DATABASE=database/database.sqlite|' .env
+          sed -i 's/^DB_HOST=/#DB_HOST=/' .env
+          sed -i 's/^DB_PORT=/#DB_PORT=/' .env
+          sed -i 's/^DB_USERNAME=/#DB_USERNAME=/' .env
+          sed -i 's/^DB_PASSWORD=/#DB_PASSWORD=/' .env
+
+      - name: Migrate
+        run: php artisan migrate --force
+
+      - name: Run tests
+        run: php artisan test -q
