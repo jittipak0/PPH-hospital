@@ -1,0 +1,74 @@
+name: deploy-selfhosted
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: [self-hosted, hospital]   # ต้องตรงกับ label ที่ตั้งตอน config.sh
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---------- Frontend ----------
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      # ตั้งค่า API URL สำหรับ build (ถ้ามีโดเมนทีหลังค่อยเปลี่ยน)
+      - name: Set frontend env (production)
+        run: |
+          echo "VITE_API_BASE_URL=http://127.0.0.1:8080" > frontend/.env.production
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy frontend to /var/www/hospital/frontend
+        run: |
+          rsync -az --delete frontend/dist/ /var/www/hospital/frontend/
+
+      # ---------- Backend ----------
+      - name: Prepare backend release dir
+        id: prep
+        run: |
+          set -e
+          TS=$(date +%s)
+          REL="/var/www/hospital/releases/backend-${TS}"
+          mkdir -p "$REL"
+          echo "REL=$REL" >> $GITHUB_OUTPUT
+
+      - name: Copy backend source to release
+        run: |
+          rsync -az --delete \
+            --exclude ".git" --exclude "vendor" --exclude "node_modules" \
+            backend/ ${{ steps.prep.outputs.REL }}/
+
+      - name: Link shared storage/cache and .env
+        run: |
+          set -e
+          cd ${{ steps.prep.outputs.REL }}
+          # ใช้ .env จาก shared
+          cp /var/www/hospital/shared/.env .env
+          # ลบโฟลเดอร์ local แล้วชี้ไป shared
+          rm -rf storage bootstrap/cache
+          ln -s /var/www/hospital/shared/storage storage
+          ln -s /var/www/hospital/shared/bootstrap/cache bootstrap/cache
+
+      - name: Composer install (prod) + migrate + caches
+        run: |
+          set -e
+          cd ${{ steps.prep.outputs.REL }}
+          /usr/local/bin/composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          php artisan key:generate --force || true
+          php artisan migrate --force
+          php artisan config:cache && php artisan route:cache && php artisan view:cache
+
+      - name: Switch current backend symlink
+        run: |
+          ln -sfn ${{ steps.prep.outputs.REL }} /var/www/hospital/backend
+          chown -hR deploy:deploy /var/www/hospital
+          # ถ้าใช้ SELinux ให้คง context
+          (sudo restorecon -Rv /var/www/hospital || true)
+          sudo systemctl reload nginx || true
