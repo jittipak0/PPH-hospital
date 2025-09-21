@@ -5,55 +5,57 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: [self-hosted, hospital]   # ต้องตรงกับ label ที่ตั้งตอน config.sh
+    runs-on: [self-hosted, hospital]
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
 
       # ---------- Frontend ----------
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with: { node-version: 20 }
 
-      # ตั้งค่า API URL สำหรับ build (ถ้ามีโดเมนทีหลังค่อยเปลี่ยน)
       - name: Set frontend env (production)
-        run: |
-          echo "VITE_API_BASE_URL=http://127.0.0.1:8080" > frontend/.env.production
+        run: echo "VITE_API_BASE_URL=http://127.0.0.1:8080" > frontend/.env.production
 
       - name: Build frontend
         working-directory: frontend
         run: |
+          set -euxo pipefail
           npm ci
           npm run build
 
       - name: Deploy frontend to /var/www/hospital/frontend
         run: |
+          set -euxo pipefail
+          mkdir -p /var/www/hospital/frontend
           rsync -az --delete frontend/dist/ /var/www/hospital/frontend/
 
       # ---------- Backend ----------
       - name: Prepare backend release dir
         id: prep
         run: |
-          set -e
+          set -euxo pipefail
           TS=$(date +%s)
           REL="/var/www/hospital/releases/backend-${TS}"
           mkdir -p "$REL"
-          echo "REL=$REL" >> $GITHUB_OUTPUT
+          echo "REL=$REL" >> "$GITHUB_OUTPUT"
 
       - name: Copy backend source to release
         run: |
-          rsync -az --delete \
-            --exclude ".git" --exclude "vendor" --exclude "node_modules" \
-            backend/ ${{ steps.prep.outputs.REL }}/
+          set -euxo pipefail
+          rsync -az --delete --exclude ".git" --exclude "vendor" --exclude "node_modules" \
+            backend/ "${{ steps.prep.outputs.REL }}/"
 
       - name: Link shared storage/cache and .env
         run: |
-          set -e
-          cd ${{ steps.prep.outputs.REL }}
+          set -euxo pipefail
+          cd "${{ steps.prep.outputs.REL }}"
           cp /var/www/hospital/shared/.env .env
           rm -rf storage bootstrap/cache
           ln -s /var/www/hospital/shared/storage storage
           ln -s /var/www/hospital/shared/bootstrap/cache bootstrap/cache
-          # ถ้าใช้ SQLite ให้สร้างไฟล์ DB (อ่านจาก .env)
           if grep -q '^DB_CONNECTION=sqlite' .env; then
             DB_PATH="$(grep '^DB_DATABASE=' .env | cut -d= -f2-)"
             [ -n "$DB_PATH" ] && touch "$DB_PATH"
@@ -61,16 +63,19 @@ jobs:
 
       - name: Composer install (prod) + migrate + caches
         run: |
-          set -e
-          cd ${{ steps.prep.outputs.REL }}
-          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          set -euxo pipefail
+          cd "${{ steps.prep.outputs.REL }}"
+          COMPOSER_BIN="$(command -v composer || echo /usr/bin/composer)"
+          php -v
+          "$COMPOSER_BIN" install --no-dev --no-interaction --prefer-dist --optimize-autoloader
           php artisan key:generate --force || true
           php artisan migrate --force
           php artisan config:cache && php artisan route:cache && php artisan view:cache
 
-      - name: Switch current backend symlink
+      - name: Switch current backend symlink & reload nginx
         run: |
-          ln -sfn ${{ steps.prep.outputs.REL }} /var/www/hospital/backend
+          set -euxo pipefail
+          ln -sfn "${{ steps.prep.outputs.REL }}" /var/www/hospital/backend
           chown -hR deploy:deploy /var/www/hospital
           (sudo restorecon -Rv /var/www/hospital || true)
           sudo systemctl reload nginx || true

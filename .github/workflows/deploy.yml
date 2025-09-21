@@ -1,12 +1,22 @@
 name: deploy
-on: { push: { branches: [ main ] } }
+on:
+  push:
+    branches: [ main ]
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
+
+      # ใส่ค่า API ด้วย IP:8080 สำหรับ production build
+      - name: Set frontend env for build
+        run: |
+          echo "VITE_API_BASE_URL=http://${{ secrets.SERVER_HOST }}:8080" > frontend/.env.production
+
       - name: Build frontend
         working-directory: frontend
         run: |
@@ -30,6 +40,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with: { name: frontend-dist, path: frontend-dist }
+
       - name: Upload frontend dist
         run: |
           rsync -az -e "ssh -i ~/.ssh/id_ed25519" \
@@ -61,4 +72,4 @@ jobs:
             chown -hR deploy:deploy /var/www/hospital
             sudo restorecon -Rv /var/www/hospital || true
             sudo systemctl reload nginx || true
-          SSH
+SSH
