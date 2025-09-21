@@ -49,18 +49,21 @@ jobs:
         run: |
           set -e
           cd ${{ steps.prep.outputs.REL }}
-          # ใช้ .env จาก shared
           cp /var/www/hospital/shared/.env .env
-          # ลบโฟลเดอร์ local แล้วชี้ไป shared
           rm -rf storage bootstrap/cache
           ln -s /var/www/hospital/shared/storage storage
           ln -s /var/www/hospital/shared/bootstrap/cache bootstrap/cache
+          # ถ้าใช้ SQLite ให้สร้างไฟล์ DB (อ่านจาก .env)
+          if grep -q '^DB_CONNECTION=sqlite' .env; then
+            DB_PATH="$(grep '^DB_DATABASE=' .env | cut -d= -f2-)"
+            [ -n "$DB_PATH" ] && touch "$DB_PATH"
+          fi
 
       - name: Composer install (prod) + migrate + caches
         run: |
           set -e
           cd ${{ steps.prep.outputs.REL }}
-          /usr/local/bin/composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
           php artisan key:generate --force || true
           php artisan migrate --force
           php artisan config:cache && php artisan route:cache && php artisan view:cache
@@ -69,6 +72,5 @@ jobs:
         run: |
           ln -sfn ${{ steps.prep.outputs.REL }} /var/www/hospital/backend
           chown -hR deploy:deploy /var/www/hospital
-          # ถ้าใช้ SELinux ให้คง context
           (sudo restorecon -Rv /var/www/hospital || true)
           sudo systemctl reload nginx || true
