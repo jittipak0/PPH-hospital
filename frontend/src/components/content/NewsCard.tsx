@@ -1,6 +1,5 @@
 import React from 'react'
 import type { NewsItem } from '../../lib/api'
-import { useI18n } from '../../lib/i18n'
 
 interface NewsCardProps {
   news: NewsItem
@@ -8,9 +7,7 @@ interface NewsCardProps {
 }
 
 export const NewsCard: React.FC<NewsCardProps> = ({ news, onSelect }) => {
-  const { t, language } = useI18n()
-  const locale = language === 'th' ? 'th-TH' : 'en-US'
-  const formattedDate = new Date(news.publishedAt).toLocaleDateString(locale, {
+  const formattedDate = new Date(news.publishedAt).toLocaleDateString('th-TH', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
@@ -18,19 +15,13 @@ export const NewsCard: React.FC<NewsCardProps> = ({ news, onSelect }) => {
 
   return (
     <article className="card news-card">
-      <img
-        src={`${news.imageUrl}?auto=format&fit=crop&w=600&q=80`}
-        alt={t('home.news.cardImageAlt')}
-        loading="lazy"
-      />
+      <img src={`${news.imageUrl}?auto=format&fit=crop&w=600&q=80`} alt="ภาพประกอบข่าว" loading="lazy" />
       <div className="news-card__body">
-        <p className="news-card__date">
-          {t('home.news.publishedPrefix')} {formattedDate}
-        </p>
+        <p className="news-card__date">เผยแพร่ {formattedDate}</p>
         <h3>{news.title}</h3>
         <p>{news.summary}</p>
         <button type="button" onClick={() => onSelect?.(news)} className="news-card__button">
-          {t('home.news.readMore')}
+          อ่านรายละเอียด
         </button>
       </div>
       <style>{`
