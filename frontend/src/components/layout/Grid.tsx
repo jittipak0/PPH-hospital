@@ -7,22 +7,25 @@ interface GridProps {
 }
 
 export const Grid: React.FC<GridProps> = ({ children, columns = 3, gap = '1.5rem' }) => {
+  const id = React.useId()
+  const gridClassName = React.useMemo(() => `grid-layout-${id.replace(/[:]/g, '-')}`, [id])
+
   return (
-    <div className="grid-layout">
+    <div className={gridClassName}>
       {children}
       <style>{`
-        .grid-layout {
+        .${gridClassName} {
           display: grid;
           gap: ${gap};
           grid-template-columns: repeat(${columns}, minmax(0, 1fr));
         }
         @media (max-width: 1024px) {
-          .grid-layout {
+          .${gridClassName} {
             grid-template-columns: repeat(${Math.min(columns, 2)}, minmax(0, 1fr));
           }
         }
         @media (max-width: 640px) {
-          .grid-layout {
+          .${gridClassName} {
             grid-template-columns: 1fr;
           }
         }
