@@ -57,23 +57,24 @@ jobs:
             DB_PATH="$(grep '^DB_DATABASE=' .env | cut -d= -f2-)"
             [ -n "$DB_PATH" ] && touch "$DB_PATH"
           fi
+          mkdir -p storage/framework/{cache,views}
 
       - name: Composer install (prod) + migrate + caches
         run: |
           set -euxo pipefail
           cd "${{ steps.prep.outputs.REL }}"
           composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
-          # สร้าง APP_KEY ถ้ายังว่าง
           php artisan key:generate --force || true
           php artisan migrate --force
           php artisan config:cache && php artisan route:cache
-          # ถ้าไม่มี resources/views ให้ข้าม view:cache
-          if [ -d resources/views ]; then
+          # cache views เฉพาะเมื่อมีไฟล์ .blade.php
+          if find resources/views -type f -name '*.blade.php' 2>/dev/null | grep -q .; then
             php artisan view:cache
           else
-            echo "No resources/views, skip view:cache"
+            echo "No Blade views, skip view:cache"
             php artisan view:clear || true
           fi
+    
 
 
       - name: Switch current backend symlink & reload nginx
