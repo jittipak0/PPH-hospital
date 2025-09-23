@@ -61,6 +61,21 @@ npm run dev                 # พัฒนาบน http://localhost:5173
 - ติดตั้ง ESLint + Prettier (`npm install -D eslint prettier eslint-plugin-react`) และคัดลอกคอนฟิกจาก `docs/CODING_RULES.md`
 - ตั้งค่า Git hooks ผ่าน Husky เพื่อตรวจสอบ lint/test ก่อน commit
 
+## แนวทางสภาพแวดล้อมพัฒนาและดีพลอย
+
+### พัฒนาใน Windows ด้วย WSL
+- ติดตั้ง WSL แล้ว `git clone` รีโปลงใน Linux filesystem (เช่น `~/projects/PPH-hospital`) เพื่อหลีกเลี่ยงปัญหา permission/ประสิทธิภาพจากการทำงานบนไดรฟ์ Windows หรือ `/var/www`
+- รันคำสั่งทั้งหมดของ Composer, npm และ Artisan ภายใน WSL เท่านั้น รวมถึงการสร้างโปรเจ็กต์ Laravel จริงด้วย `composer create-project`, การติดตั้ง Sanctum และการคัดลอกไฟล์จาก `backend/src-snippets`
+- ตั้งค่า MySQL/MariaDB สำหรับการพัฒนา (จะรันภายใน WSL หรือใช้ฐานข้อมูลภายนอกก็ได้) แล้วรัน `php artisan migrate`/`php artisan db:seed` ตามต้องการ
+- คัดลอก `.env.example` ไปเป็น `.env` ทั้งฝั่ง backend และ frontend พร้อมกรอกค่า `APP_KEY`, `DB_*`, `SANCTUM_STATEFUL_DOMAINS`, `VITE_API_BASE_URL` เป็นต้น โดยอ้างอิงรายละเอียดจาก `docs/ENV.md`
+- ใช้สคริปต์มาตรฐานเช่น `php artisan serve`, `php artisan test`, `npm run dev` เพื่อทดสอบก่อนส่งงาน และตรวจสอบ `GET /api/health`/หน้าเว็บว่าเชื่อมต่อกันได้
+
+### เตรียมเซิร์ฟเวอร์ Linux 9 สำหรับดีพลอย
+- ติดตั้ง Git, PHP-FPM 8.x, Composer และส่วนขยาย Laravel ที่จำเป็น จากนั้น `git pull` โค้ด production, รัน `composer install --no-dev`, อัปเดต `.env`, แล้วสั่ง `php artisan migrate --force` พร้อมคำสั่ง cache (`config:cache`, `route:cache`, `queue:restart`)
+- ฝั่ง frontend ให้รัน `npm ci` และ `npm run build` แล้วนำไฟล์ใน `dist/` ไปเสิร์ฟผ่าน Nginx โดยใช้ไฟล์ตัวอย่างใน `nginx/` เป็นแม่แบบ (ตั้งค่า proxy `/api` ไป backend)
+- เปิดใช้ systemd service/timer ตามไฟล์ใน `systemd/` สำหรับ queue worker (`queue:work`) และ scheduler (`schedule:run`) เพื่อให้ artisan ทำงานอัตโนมัติ
+- หลังดีพลอยตรวจสอบ `GET /api/health`, ดูสถานะบริการ (`systemctl status nginx php-fpm`), และทำตามขั้นตอน post-deploy/checklist ใน `docs/RUNBOOK.md`
+
 ## การสนับสนุนและการปรับแก้
 - อัปเดตเอกสารทุกครั้งเมื่อเพิ่ม endpoint, environment variable หรือขั้นตอน deployment ใหม่
 - ใช้ `docs/CODING_RULES.md` เป็นมาตรฐานกลางสำหรับโค้ดทั้งระบบ
