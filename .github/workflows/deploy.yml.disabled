@@ -1,0 +1,75 @@
+name: deploy
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      # ใส่ค่า API ด้วย IP:8080 สำหรับ production build
+      - name: Set frontend env for build
+        run: |
+          echo "VITE_API_BASE_URL=http://${{ secrets.SERVER_HOST }}:8080" > frontend/.env.production
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+      - uses: actions/upload-artifact@v4
+        with: { name: frontend-dist, path: frontend/dist }
+
+      - name: Setup SSH key
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_ed25519
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Rsync backend code
+        run: |
+          rsync -az --delete \
+            --exclude ".git" --exclude "vendor" --exclude ".env" \
+            -e "ssh -i ~/.ssh/id_ed25519" \
+            backend/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.SERVER_PATH }}/releases/backend-$(date +%s)/
+
+      - uses: actions/download-artifact@v4
+        with: { name: frontend-dist, path: frontend-dist }
+
+      - name: Upload frontend dist
+        run: |
+          rsync -az -e "ssh -i ~/.ssh/id_ed25519" \
+            frontend-dist/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.SERVER_PATH }}/frontend/
+
+      - name: Remote deploy steps
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} <<'SSH'
+            set -e
+            cd /var/www/hospital
+            RELEASE=$(ls -1dt releases/backend-* | head -n1)
+
+            if [ ! -f shared/.env ]; then
+              echo "ERROR: put your production .env into /var/www/hospital/shared/.env first"; exit 1
+            fi
+            cp shared/.env "$RELEASE/.env"
+
+            rm -rf "$RELEASE/storage" "$RELEASE/bootstrap/cache"
+            ln -s /var/www/hospital/shared/storage "$RELEASE/storage"
+            ln -s /var/www/hospital/shared/bootstrap/cache "$RELEASE/bootstrap/cache"
+
+            cd "$RELEASE"
+            /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
+            php artisan key:generate --force || true
+            php artisan migrate --force
+            php artisan config:cache && php artisan route:cache && php artisan view:cache
+
+            ln -sfn "$RELEASE" /var/www/hospital/backend
+            chown -hR deploy:deploy /var/www/hospital
+            sudo restorecon -Rv /var/www/hospital || true
+            sudo systemctl reload nginx || true
+SSH
