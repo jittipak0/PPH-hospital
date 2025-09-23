@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom'
 import { useI18n } from '../../lib/i18n'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { ThemeToggle } from './ThemeToggle'
+import { DownloadWebViewButton } from './DownloadWebViewButton'
 
 interface NavbarProps {
   onIncreaseFont: () => void
@@ -54,6 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
             ))}
           </ul>
           <div className="navbar__actions">
+            <DownloadWebViewButton className="navbar__download" />
             <LanguageSwitcher />
             <ThemeToggle
               onIncreaseFont={onIncreaseFont}
@@ -119,6 +121,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
           gap: 0.75rem;
           align-items: center;
         }
+        .navbar__download {
+          padding: 0.5rem 1.1rem;
+          font-size: 0.95rem;
+        }
+        .navbar__download .download-webview-button__icon {
+          font-size: 0.95rem;
+        }
         @media (max-width: 960px) {
           .navbar__toggle {
             display: block;
@@ -145,6 +154,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
           .navbar__actions {
             width: 100%;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+          }
+          .navbar__download {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>

@@ -5,6 +5,7 @@ import { PageSection } from '../components/layout/PageSection'
 import { Grid } from '../components/layout/Grid'
 import { NewsList } from '../components/content/NewsList'
 import { ArticleCard } from '../components/content/ArticleCard'
+import { DownloadWebViewButton } from '../components/common/DownloadWebViewButton'
 import { api, type Article, type Clinic, type NewsItem } from '../lib/api'
 
 export const Home: React.FC = () => {
@@ -49,6 +50,7 @@ export const Home: React.FC = () => {
               <Link to="/news" className="btn btn-secondary" aria-label="อ่านข่าวสารโรงพยาบาล">
                 ข่าวสารล่าสุด
               </Link>
+              <DownloadWebViewButton className="hero-download-button" />
             </div>
           </div>
           <div className="hero__figure" aria-hidden="true">
@@ -169,6 +171,9 @@ export const Home: React.FC = () => {
           display: flex;
           gap: 1rem;
           flex-wrap: wrap;
+        }
+        .hero-download-button {
+          padding: 0.75rem 1.5rem;
         }
         .hero__figure img {
           border-radius: 24px;
