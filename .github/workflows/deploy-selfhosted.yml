@@ -24,13 +24,15 @@ jobs:
           chmod -R u+rwX,go+rX dist
 
       - name: Deploy frontend
-        working-directory: frontend/dist
         run: |
           set -euxo pipefail
-          ls -al | head               # debug เห็นไฟล์จริง
-          rsync -azv --delete \
-            --no-perms --no-owner --no-group --omit-dir-times \
-            ./ /var/www/hospital/frontend/
+          # ลบของเก่าให้เหมือน --delete
+          rm -rf /var/www/hospital/frontend/*
+          # คัดลอกจาก dist แบบรักษาโครง/สิทธิ์
+          tar -C frontend/dist -cf - . | tar -C /var/www/hospital/frontend -xf -
+          # กันสิทธิ์อ่าน
+          find /var/www/hospital/frontend -type d -exec chmod 755 {} +
+          find /var/www/hospital/frontend -type f -exec chmod 644 {} +
 
       # --------- ส่วน backend  ---------
       - name: Prepare backend release dir
