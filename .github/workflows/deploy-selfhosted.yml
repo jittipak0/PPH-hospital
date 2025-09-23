@@ -42,11 +42,17 @@ jobs:
           TS=$(date +%s); REL="/var/www/hospital/releases/backend-${TS}"
           mkdir -p "$REL"; echo "REL=$REL" >>"$GITHUB_OUTPUT"
 
-      - name: Copy backend source to release
+      - name: Debug backend path
         run: |
           set -euxo pipefail
-          rsync -az --delete --exclude .git --exclude vendor --exclude node_modules \
-            backend/ "${{ steps.prep.outputs.REL }}/"
+          echo "WS=$GITHUB_WORKSPACE"
+          ls -al "$GITHUB_WORKSPACE/backend" || true
+
+      - name: Copy backend source to release (tar pipe)
+        run: |
+          set -euxo pipefail
+          tar -C backend -cf - . \
+            | tar -C "${{ steps.prep.outputs.REL }}" -xf -
 
       - name: Link shared storage/cache and .env
         run: |
