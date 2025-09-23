@@ -1,0 +1,84 @@
+:root {
+  --font-scale: 1;
+  --color-primary: #0d6efd;
+  --color-secondary: #20c997;
+  --color-background: #f8fbff;
+  --color-surface: #ffffff;
+  --color-text: #1f2937;
+  --color-muted: #6b7280;
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.08);
+  --radius-md: 12px;
+  font-size: calc(16px * var(--font-scale));
+}
+
+body {
+  margin: 0;
+  font-family: 'Noto Sans Thai', 'Sarabun', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+body.high-contrast {
+  --color-background: #0b1120;
+  --color-surface: #111827;
+  --color-text: #f9fafb;
+  --color-muted: #e5e7eb;
+  --color-primary: #60a5fa;
+  --color-secondary: #34d399;
+}
+
+a {
+  color: inherit;
+}
+
+a:focus {
+  outline: 3px solid var(--color-secondary);
+  outline-offset: 4px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+main {
+  min-height: 60vh;
+}
+
+.card {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --font-scale: 1;
+  }
+}
