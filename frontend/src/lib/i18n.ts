@@ -1,4 +1,14 @@
-import React, { createContext, useContext, useMemo, useState } from 'react'
+
+import {
+  createContext,
+  createElement,
+  useContext,
+  useMemo,
+  useState,
+  type ReactElement,
+  type ReactNode
+} from 'react'
+
 
 type Language = 'th' | 'en'
 
@@ -47,9 +57,14 @@ type I18nContextValue = {
   t: (key: string) => string
 }
 
+
+type I18nProviderProps = {
+  children: ReactNode
+}
+
 const I18nContext = createContext<I18nContextValue | undefined>(undefined)
 
-export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export function I18nProvider({ children }: I18nProviderProps): ReactElement {
   const [language, setLanguage] = useState<Language>('th')
 
   const value = useMemo<I18nContextValue>(() => ({
@@ -58,7 +73,9 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
     t: (key) => dictionary[language][key] ?? key
   }), [language])
 
-  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
+
+  return createElement(I18nContext.Provider, { value }, children)
+
 }
 
 export const useI18n = (): I18nContextValue => {
