@@ -62,10 +62,19 @@ jobs:
         run: |
           set -euxo pipefail
           cd "${{ steps.prep.outputs.REL }}"
-          "$(command -v composer)" install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          # สร้าง APP_KEY ถ้ายังว่าง
           php artisan key:generate --force || true
           php artisan migrate --force
-          php artisan config:cache && php artisan route:cache && php artisan view:cache
+          php artisan config:cache && php artisan route:cache
+          # ถ้าไม่มี resources/views ให้ข้าม view:cache
+          if [ -d resources/views ]; then
+            php artisan view:cache
+          else
+            echo "No resources/views, skip view:cache"
+            php artisan view:clear || true
+          fi
+
 
       - name: Switch current backend symlink & reload nginx
         run: |
