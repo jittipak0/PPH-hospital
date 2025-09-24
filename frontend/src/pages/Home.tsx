@@ -12,6 +12,11 @@ export const Home: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([])
   const [clinics, setClinics] = useState<Clinic[]>([])
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [installationResult, setInstallationResult] = useState<'installed' | 'dismissed' | null>(null)
+  const [showGuide, setShowGuide] = useState<'ios' | 'android' | null>(null)
+  const [platform, setPlatform] = useState<'ios' | 'android' | 'other'>('other')
+  const [isStandalone, setIsStandalone] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -33,12 +38,114 @@ export const Home: React.FC = () => {
     }
   }, [])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const userAgent = window.navigator.userAgent.toLowerCase()
+    if (/iphone|ipad|ipod/.test(userAgent)) {
+      setPlatform('ios')
+    } else if (/android/.test(userAgent)) {
+      setPlatform('android')
+    }
+
+    const standaloneMatcher = window.matchMedia('(display-mode: standalone)')
+    const detectStandalone = () => {
+      const standalone = standaloneMatcher.matches || window.navigator.standalone === true
+      setIsStandalone(standalone)
+      if (standalone) {
+        setDeferredPrompt(null)
+      }
+    }
+
+    detectStandalone()
+
+    const handleDisplayModeChange = () => detectStandalone()
+    if (standaloneMatcher.addEventListener) {
+      standaloneMatcher.addEventListener('change', handleDisplayModeChange)
+    } else if (standaloneMatcher.addListener) {
+      standaloneMatcher.addListener(handleDisplayModeChange)
+    }
+
+    const handleBeforeInstallPrompt = (event: BeforeInstallPromptEvent) => {
+      event.preventDefault()
+      setDeferredPrompt(event)
+      setInstallationResult(null)
+    }
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null)
+      setInstallationResult('installed')
+      setShowGuide(null)
+      setIsStandalone(true)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('appinstalled', handleAppInstalled)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
+      if (standaloneMatcher.removeEventListener) {
+        standaloneMatcher.removeEventListener('change', handleDisplayModeChange)
+      } else if (standaloneMatcher.removeListener) {
+        standaloneMatcher.removeListener(handleDisplayModeChange)
+      }
+    }
+  }, [])
+
+  const handleAndroidInstall = async () => {
+    if (!deferredPrompt) {
+      setShowGuide('android')
+      return
+    }
+
+    try {
+      await deferredPrompt.prompt()
+      const choice = await deferredPrompt.userChoice
+      setDeferredPrompt(null)
+      if (choice.outcome === 'accepted') {
+        setInstallationResult('installed')
+      } else {
+        setInstallationResult('dismissed')
+        setShowGuide('android')
+      }
+    } catch (error) {
+      console.error('Unable to show install prompt', error)
+      setInstallationResult('dismissed')
+      setShowGuide('android')
+    }
+  }
+
+  const handleIosInstall = () => {
+    setShowGuide('ios')
+  }
+
+  const closeGuide = () => {
+    setShowGuide(null)
+  }
+
+  const showAndroidHint = platform === 'android' && !isStandalone && deferredPrompt === null
+
+  const iosInstructions = [
+    'เปิดเว็บไซต์ด้วย Safari เพื่อให้สามารถเพิ่มลงหน้าจอหลักได้',
+    'แตะปุ่ม Share (ไอคอนสี่เหลี่ยมพร้อมลูกศรขึ้น)',
+    'เลือก “Add to Home Screen / เพิ่มไปยังหน้าจอโฮม”',
+    'ตั้งชื่อแอปตามต้องการแล้วกด Add'
+  ]
+
+  const androidInstructions = [
+    'เปิดเว็บไซต์ด้วย Google Chrome บนอุปกรณ์ Android',
+    'แตะเมนูจุดสามจุดมุมขวาบน',
+    'เลือก “Add to Home screen / เพิ่มลงหน้าจอหลัก”',
+    'ยืนยันโดยแตะ Add แอปจะถูกติดตั้งเป็น WebView'
+  ]
+
   return (
     <div className="home-page">
       <section className="hero">
         <Container>
           <div className="hero__content">
-            <h1>โรงพยาบาลประชารัฐ ยืนหยัดเพื่อการดูแลสุขภาพของทุกคน</h1>
+            <h1>โรงพยาบาลโพนพิสัย ยืนหยัดเพื่อการดูแลสุขภาพของทุกคน</h1>
             <p>
               เราให้บริการการรักษาครบวงจร ทีมแพทย์ผู้เชี่ยวชาญ และเทคโนโลยีทันสมัย เพื่อให้คนไทยทุกวัยได้รับการดูแลที่ดีที่สุด
             </p>
@@ -59,6 +166,54 @@ export const Home: React.FC = () => {
           </div>
         </Container>
       </section>
+
+      <PageSection
+        id="download"
+        title="ติดตั้งเวอร์ชันมือถือ"
+        description="ใช้งานเว็บไซต์ในรูปแบบ WebView เสมือนแอปสำหรับ Android และ iOS"
+      >
+        <div className="download-section">
+          <article className="card download-card">
+            <h3>Android</h3>
+            <p>ติดตั้งเว็บแอปผ่าน Chrome เพื่อใช้งานแบบหน้าต่างเต็มจอ พร้อมเข้าสู่ระบบได้รวดเร็ว</p>
+            <button type="button" className="btn btn-primary" onClick={handleAndroidInstall}>
+              ติดตั้ง WebView บน Android
+            </button>
+            {installationResult === 'installed' && (
+              <p className="download-card__status" role="status">
+                ติดตั้งเรียบร้อยแล้ว สามารถเปิดได้จากหน้าจอหลัก
+              </p>
+            )}
+            {installationResult === 'dismissed' && (
+              <p className="download-card__status" role="status">
+                หากยังไม่เห็นปุ่ม ให้ทำตามขั้นตอนคู่มือด้านขวา
+              </p>
+            )}
+            {showAndroidHint && (
+              <p className="download-card__hint">
+                เปิดเว็บไซต์ผ่าน Google Chrome แล้วรีเฟรชหน้าเพื่อให้ปุ่มติดตั้งปรากฏ
+              </p>
+            )}
+          </article>
+          <article className="card download-card">
+            <h3>iOS</h3>
+            <p>เพิ่มเว็บแอปลงหน้าจอหลักผ่าน Safari เพื่อใช้งานเหมือนแอปพลิเคชัน</p>
+            <button type="button" className="btn btn-secondary" onClick={handleIosInstall}>
+              ดูขั้นตอนสำหรับ iOS
+            </button>
+            {platform === 'ios' && !isStandalone && (
+              <p className="download-card__hint">
+                ใช้ Safari เพื่อเพิ่มแอปลงหน้าจอหลักและใช้งานแบบเต็มหน้าจอ
+              </p>
+            )}
+            {isStandalone && platform === 'ios' && (
+              <p className="download-card__status" role="status">
+                คุณกำลังใช้งานในโหมดติดตั้งแล้ว ขอบคุณค่ะ
+              </p>
+            )}
+          </article>
+        </div>
+      </PageSection>
 
       <PageSection id="quick-actions" title="บริการยอดนิยม" description="เข้าถึงบริการสำคัญของโรงพยาบาลได้ง่ายในคลิกเดียว">
         <Grid columns={3}>
@@ -139,7 +294,7 @@ export const Home: React.FC = () => {
             </div>
             <div className="map-section__frame">
               <iframe
-                title="แผนที่โรงพยาบาลประชารัฐ"
+                title="แผนที่โรงพยาบาลโพนพิสัย"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3875.792975200286!2d100.493088375097!3d13.745570897166702!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30e298d02c5d4b53%3A0xdbc3cfc9ad1bc105!2sMinistry%20of%20Public%20Health!5e0!3m2!1sth!2sth!4v1717470000000!5m2!1sth!2sth"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -149,6 +304,23 @@ export const Home: React.FC = () => {
           </div>
         </Container>
       </section>
+      {showGuide && (
+        <div className="install-guide" role="dialog" aria-modal="true" aria-labelledby="install-guide-title">
+          <div className="install-guide__content">
+            <h3 id="install-guide-title">
+              {showGuide === 'ios' ? 'ขั้นตอนติดตั้งบน iOS' : 'ขั้นตอนติดตั้งบน Android'}
+            </h3>
+            <ol>
+              {(showGuide === 'ios' ? iosInstructions : androidInstructions).map((step, index) => (
+                <li key={index}>{step}</li>
+              ))}
+            </ol>
+            <button type="button" className="btn btn-secondary" onClick={closeGuide}>
+              ปิดคู่มือ
+            </button>
+          </div>
+        </div>
+      )}
       <style>{`
         .hero {
           background: linear-gradient(135deg, rgba(13, 110, 253, 0.15), rgba(32, 201, 151, 0.15));
@@ -180,6 +352,25 @@ export const Home: React.FC = () => {
           align-items: center;
           justify-content: space-between;
           gap: 2rem;
+        }
+        .download-section {
+          display: grid;
+          gap: 1.5rem;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+        .download-card {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .download-card__status {
+          margin: 0;
+          font-weight: 600;
+          color: var(--color-primary);
+        }
+        .download-card__hint {
+          margin: 0;
+          color: #495057;
         }
         .btn {
           display: inline-flex;
@@ -226,6 +417,30 @@ export const Home: React.FC = () => {
           border: 0;
           border-radius: var(--radius-md);
           box-shadow: var(--shadow-sm);
+        }
+        .install-guide {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1.5rem;
+          z-index: 1000;
+        }
+        .install-guide__content {
+          background: #fff;
+          border-radius: var(--radius-md);
+          max-width: min(460px, 100%);
+          width: 100%;
+          padding: 2rem;
+          box-shadow: var(--shadow-md);
+        }
+        .install-guide__content ol {
+          padding-left: 1.25rem;
+        }
+        .install-guide__content li + li {
+          margin-top: 0.5rem;
         }
         @media (max-width: 960px) {
           .hero .container-shell {

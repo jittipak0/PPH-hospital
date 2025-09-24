@@ -32,7 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
     <header className="navbar">
       <div className="navbar__inner">
         <Link to="/" className="navbar__brand" onClick={handleLinkClick}>
-          โรงพยาบาลประชารัฐ
+          โรงพยาบาลโพนพิสัย
         </Link>
         <button
           className="navbar__toggle"

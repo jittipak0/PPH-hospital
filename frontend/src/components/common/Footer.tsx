@@ -7,7 +7,7 @@ export const Footer: React.FC = () => {
     <footer className="site-footer">
       <Container className="site-footer__inner">
         <div>
-          <strong>โรงพยาบาลประชารัฐ</strong>
+          <strong>โรงพยาบาลโพนพิสัย</strong>
           <p>เพื่อสุขภาพที่ดีของคนไทยทุกคน</p>
         </div>
         <nav aria-label="ลิงก์สำคัญ">
@@ -37,7 +37,7 @@ export const Footer: React.FC = () => {
           </a>
         </div>
       </Container>
-      <div className="site-footer__credit">© {new Date().getFullYear()} โรงพยาบาลประชารัฐ กระทรวงสาธารณสุข</div>
+      <div className="site-footer__credit">© {new Date().getFullYear()} โรงพยาบาลโพนพิสัย กระทรวงสาธารณสุข</div>
       <style>{`
         .site-footer {
           background: var(--color-primary);
