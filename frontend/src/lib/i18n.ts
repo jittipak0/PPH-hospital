@@ -26,11 +26,14 @@ const dictionary: Dictionary = {
     'actions.bookAppointment': 'จองคิวแพทย์ออนไลน์',
     'actions.viewDoctors': 'ค้นหาแพทย์',
     'actions.viewServices': 'ดูบริการทั้งหมด',
+    'actions.downloadWebView': 'ดาวน์โหลดชุด WebView (Android/iOS)',
     'cookie.message': 'เว็บไซต์นี้ใช้คุกกี้เพื่อให้คุณได้รับประสบการณ์ที่ดีที่สุด โปรดอ่านนโยบายความเป็นส่วนตัว',
     'cookie.accept': 'ยอมรับคุกกี้',
     'cookie.reject': 'ปฏิเสธ',
     'language.th': 'ไทย',
-    'language.en': 'English'
+    'language.en': 'English',
+    'download.webview.ariaLabel': 'ดาวน์โหลดชุดโค้ด WebView สำหรับอุปกรณ์พกพา',
+    'download.webview.preparing': 'กำลังเตรียมแพ็กเกจ...'
   },
   en: {
     'nav.home': 'Home',
@@ -43,11 +46,14 @@ const dictionary: Dictionary = {
     'actions.bookAppointment': 'Book a doctor appointment',
     'actions.viewDoctors': 'Find doctors',
     'actions.viewServices': 'View all services',
+    'actions.downloadWebView': 'Download WebView kit (Android/iOS)',
     'cookie.message': 'We use cookies to ensure you get the best experience. Please review our privacy policy.',
     'cookie.accept': 'Accept cookies',
     'cookie.reject': 'Decline',
     'language.th': 'ไทย',
-    'language.en': 'English'
+    'language.en': 'English',
+    'download.webview.ariaLabel': 'Download a ready-to-use WebView wrapper kit for mobile',
+    'download.webview.preparing': 'Preparing archive...'
   }
 }
 
