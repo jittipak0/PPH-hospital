@@ -7,6 +7,7 @@ import { NewsList } from '../components/content/NewsList'
 import { ArticleCard } from '../components/content/ArticleCard'
 import { DownloadWebViewButton } from '../components/common/DownloadWebViewButton'
 import { api, type Article, type Clinic, type NewsItem } from '../lib/api'
+import type { BeforeInstallPromptEvent } from '../types/pwa'
 
 export const Home: React.FC = () => {
   const [news, setNews] = useState<NewsItem[]>([])

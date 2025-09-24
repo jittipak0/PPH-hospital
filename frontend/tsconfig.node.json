@@ -2,7 +2,7 @@
   "compilerOptions": {
     "composite": true,
     "module": "ESNext",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "Node",
     "types": ["node"]
   },
   "include": ["vite.config.ts", "vitest.setup.ts"]

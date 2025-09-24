@@ -19,9 +19,11 @@ export const appointmentSchema = z.object({
   appointmentDate: z.string().min(1, 'เลือกวันที่ต้องการนัดหมาย'),
   appointmentTime: z.string().min(1, 'เลือกเวลาที่ต้องการนัดหมาย'),
   captcha: z.string().min(4, 'กรุณากรอก CAPTCHA'),
-  consent: z.literal(true, {
-    errorMap: () => ({ message: 'โปรดยืนยันการยินยอมการจัดเก็บข้อมูลส่วนบุคคล' })
-  })
+  consent: z
+    .boolean()
+    .refine((value) => value === true, {
+      message: 'โปรดยืนยันการยินยอมการจัดเก็บข้อมูลส่วนบุคคล'
+    })
 })
 
 export const contactSchema = z.object({
@@ -30,9 +32,11 @@ export const contactSchema = z.object({
   phone: z.string().min(9, 'กรุณากรอกเบอร์โทรศัพท์'),
   message: z.string().min(10, 'กรุณากรอกรายละเอียดอย่างน้อย 10 ตัวอักษร'),
   captcha: z.string().min(4, 'กรุณากรอก CAPTCHA'),
-  consent: z.literal(true, {
-    errorMap: () => ({ message: 'โปรดยอมรับการจัดการข้อมูลส่วนบุคคลก่อนส่งข้อความ' })
-  })
+  consent: z
+    .boolean()
+    .refine((value) => value === true, {
+      message: 'โปรดยอมรับการจัดการข้อมูลส่วนบุคคลก่อนส่งข้อความ'
+    })
 })
 
 export type AppointmentFormValues = z.infer<typeof appointmentSchema>

@@ -229,4 +229,3 @@ export const api = {
   }
 }
 
-export type { Doctor }

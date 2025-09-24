@@ -27,8 +27,12 @@ const ensureCsrfToken = async (): Promise<string> => {
   if (!response.ok) {
     throw new Error('ไม่สามารถดึง CSRF token ได้')
   }
-  const data = await response.json()
-  csrfToken = data.csrfToken
+  const data: unknown = await response.json()
+  const token = typeof data === 'object' && data !== null ? (data as { csrfToken?: unknown }).csrfToken : undefined
+  if (typeof token !== 'string' || token.length === 0) {
+    throw new Error('รูปแบบ CSRF token ไม่ถูกต้อง')
+  }
+  csrfToken = token
   return csrfToken
 }
 

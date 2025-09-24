@@ -1,7 +1,9 @@
-interface BeforeInstallPromptEvent extends Event {
+export type BeforeInstallPromptOutcome = 'accepted' | 'dismissed'
+
+export interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[]
   prompt: () => Promise<void>
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
+  userChoice: Promise<{ outcome: BeforeInstallPromptOutcome; platform: string }>
 }
 
 declare global {
@@ -13,5 +15,3 @@ declare global {
     standalone?: boolean
   }
 }
-
-export {}
