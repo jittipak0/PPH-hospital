@@ -5,6 +5,12 @@ backend/storage/
 backend/bootstrap/cache/
 backend/database/*.sqlite
 
+# Express secure backend
+backend/express/node_modules/
+backend/express/.env
+backend/express/logs/
+backend/express/src/data/*.db
+
 # React frontend
 frontend/.env
 frontend/node_modules/

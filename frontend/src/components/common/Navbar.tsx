@@ -4,6 +4,7 @@ import { useI18n } from '../../lib/i18n'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { ThemeToggle } from './ThemeToggle'
 import { DownloadWebViewButton } from './DownloadWebViewButton'
+import { useAuth } from '../../context/AuthContext'
 
 interface NavbarProps {
   onIncreaseFont: () => void
@@ -25,6 +26,7 @@ const navItems = [
 export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, isHighContrast, onToggleContrast }) => {
   const { t } = useI18n()
   const [open, setOpen] = useState(false)
+  const { isAuthenticated, user, logout } = useAuth()
 
   const handleToggleMenu = () => setOpen((prev) => !prev)
   const handleLinkClick = () => setOpen(false)
@@ -53,8 +55,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
                 </NavLink>
               </li>
             ))}
+            {isAuthenticated ? (
+              <li key="dashboard">
+                <NavLink to="/dashboard" onClick={handleLinkClick}>
+                  แดชบอร์ด ({user?.role})
+                </NavLink>
+              </li>
+            ) : (
+              <li key="login">
+                <NavLink to="/login" onClick={handleLinkClick}>
+                  เข้าสู่ระบบบุคลากร
+                </NavLink>
+              </li>
+            )}
+            <li key="privacy">
+              <NavLink to="/privacy-policy" onClick={handleLinkClick}>
+                นโยบายความเป็นส่วนตัว
+              </NavLink>
+            </li>
           </ul>
           <div className="navbar__actions">
+            {isAuthenticated ? (
+              <button className="navbar__logout" onClick={logout}>
+                ออกจากระบบ
+              </button>
+            ) : null}
             <DownloadWebViewButton className="navbar__download" />
             <LanguageSwitcher />
             <ThemeToggle
@@ -127,6 +152,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
         }
         .navbar__download .download-webview-button__icon {
           font-size: 0.95rem;
+        }
+        .navbar__logout {
+          background: #ef4444;
+          color: white;
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 10px;
+          cursor: pointer;
         }
         @media (max-width: 960px) {
           .navbar__toggle {
