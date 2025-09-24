@@ -12,6 +12,10 @@ import { Doctors } from './pages/Doctors'
 import { News } from './pages/News'
 import { Contact } from './pages/Contact'
 import { Container } from './components/layout/Container'
+import { Login } from './pages/auth/Login'
+import { DashboardPage } from './pages/dashboard/Dashboard'
+import { PrivacyPolicyPage } from './pages/PrivacyPolicy'
+import { TermsPage } from './pages/Terms'
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
 
@@ -115,6 +119,19 @@ export default function App(): React.ReactElement {
             }
           />
           <Route
+            path="/login"
+            element={<Login />}
+          />
+          <Route
+            path="/dashboard"
+            element={<DashboardPage />}
+          />
+          <Route
+            path="/privacy-policy"
+            element={<PrivacyPolicyPage />}
+          />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route
             path="/sitemap"
             element={
               <Container>
@@ -127,8 +144,10 @@ export default function App(): React.ReactElement {
                     <li><a href="/services">บริการผู้ป่วย</a></li>
                     <li><a href="/appointment">นัดหมายแพทย์</a></li>
                     <li><a href="/doctors">ค้นหาแพทย์</a></li>
-                    <li><a href="/news">ข่าวสาร/กิจกรรม</a></li>
+                    <li><a href="/news">ข่าวสา/กิจกรรม</a></li>
                     <li><a href="/contact">ติดต่อเรา</a></li>
+                    <li><a href="/login">เข้าสู่ระบบบุคลากร</a></li>
+                    <li><a href="/privacy-policy">นโยบายความเป็นส่วนตัว</a></li>
                   </ul>
                 </section>
               </Container>
