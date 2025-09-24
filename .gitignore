@@ -1,11 +1,9 @@
-# Laravel backend
+# Backend (Node.js)
 backend/.env
-backend/vendor/
-backend/storage/
-backend/bootstrap/cache/
-backend/database/*.sqlite
+backend/node_modules/
+backend/data/
 
-# React frontend
+# Frontend (React)
 frontend/.env
 frontend/node_modules/
 frontend/dist/
