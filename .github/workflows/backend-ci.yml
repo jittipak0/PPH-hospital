@@ -1,0 +1,71 @@
+name: backend-ci
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+      - 'docs/**'
+      - 'README.md'
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+      - 'docs/**'
+      - 'README.md'
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, sqlite3, pdo_sqlite
+          coverage: none
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          set -euxo pipefail
+          composer install --no-interaction --prefer-dist
+
+      - name: Prepare environment
+        working-directory: backend
+        run: |
+          set -euxo pipefail
+          cp .env.example .env.testing
+          {
+            echo 'APP_ENV=testing'
+            echo 'APP_DEBUG=false'
+            echo 'DB_CONNECTION=sqlite'
+            echo 'DB_DATABASE=:memory:'
+            echo 'DATASTORE_DRIVER=eloquent'
+            echo 'DATASTORE_CONNECTION=sqlite'
+          } >> .env.testing
+
+      - name: Generate key & migrate
+        working-directory: backend
+        run: |
+          set -euxo pipefail
+          php artisan key:generate --env=testing --force
+          php artisan migrate --force --env=testing
+
+      - name: Run tests
+        working-directory: backend
+        run: |
+          set -euxo pipefail
+          ./vendor/bin/phpunit --colors=always
+
+      - name: Static analysis
+        working-directory: backend
+        run: |
+          set -euxo pipefail
+          ./vendor/bin/phpstan analyse

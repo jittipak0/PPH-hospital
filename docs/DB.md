@@ -1,6 +1,39 @@
 ﻿# DB.md – สคีมาฐานข้อมูลและหลักปฏิบัติ
 
-ระบบนี้เริ่มต้นที่โมดูลข่าวประชาสัมพันธ์และการจัดการผู้ใช้ทีมงาน เอกสารนี้ระบุสคีมาตั้งต้น ความสัมพันธ์ที่ต้องรู้ และแนวทางออกแบบฐานข้อมูลเพิ่มเติมเมื่อขยายโดเมน
+ระบบนี้เริ่มต้นที่โมดูลข่าวประชาสัมพันธ์และการจัดการผู้ใช้ทีมงาน เอกสารนี้ระบุสคีมาตั้งต้น ความสัมพันธ์ที่ต้องรู้ และแนวทางออกแบบฐานข้อมูลเพิ่มเติมเมื่อขยายโดเมน รวมถึงสถาปัตยกรรม Hexagonal ที่ใช้ควบคุมการสลับแหล่งข้อมูล
+
+## 0. สถาปัตยกรรม Hexagonal สำหรับ Datastore
+- **Port (Domain Contracts):** ประกาศใน `App\Domain\<Aggregate>\Contracts` เช่น `UserRepository`
+- **Use Case Layer:** อยู่ใน `App\Application\<Aggregate>` เรียกผ่าน interface เท่านั้น ไม่มีการอ้างอิง Eloquent ตรงๆ
+- **Adapter:** อยู่ใน `App\Infrastructure\Persistence` แยกเป็น `Eloquent` และ `Memory`
+- **Service Container Binding:** กำหนดใน `config/datastore.php` แล้วให้ `App\Providers\AppServiceProvider` bind interface → adapter ตามค่า ENV
+
+```mermaid
+flowchart LR
+    Controller -->|เรียกใช้| UseCase
+    UseCase -->|พึ่งพา| Port
+    Port --> AdapterEloquent
+    Port --> AdapterMemory
+    AdapterEloquent -->|ใช้ connection จาก| ConfigDatastore
+    subgraph Infrastructure
+        AdapterEloquent
+        AdapterMemory
+    end
+    subgraph Application
+        UseCase
+    end
+    subgraph Domain
+        Port
+    end
+    ConfigDatastore([config/datastore.php])
+```
+
+### Mapping interface → adapter → connection ตัวอย่าง (User)
+| Interface | Driver `eloquent` | Driver `memory` | Connection |
+| --- | --- | --- | --- |
+| `App\Domain\User\Contracts\UserRepository` | `App\Infrastructure\Persistence\Eloquent\UserRepository` | `App\Infrastructure\Persistence\Memory\UserRepository` | กำหนดผ่าน `DATASTORE_CONNECTION` เช่น `sqlite`, `mysql`, `pgsql`, `sqlsrv` |
+
+เมื่อเพิ่ม aggregate ใหม่ให้เพิ่ม mapping ใน `config/datastore.php` และสร้าง adapter อย่างน้อย 1 แบบให้ผ่าน contract test
 
 ## 1. ตารางหลักที่มีในสตาร์ตเตอร์
 

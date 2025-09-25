@@ -11,7 +11,9 @@
 | APP_DEBUG | เปิด error detail | `true` (dev) / `false` (prod) | ปิดใน production เสมอ |
 | APP_URL | URL หลักของ API | `https://api.hospital.local` | ใช้สร้างลิงก์และลิงก์ในอีเมล |
 | LOG_CHANNEL | ช่องทาง log | `stack` | พิจารณาเปิด syslog/sentry เพิ่ม |
-| DB_CONNECTION | ชนิดฐานข้อมูล | `mysql` | รองรับ mysql/mariadb |
+| DB_CONNECTION | ชนิดฐานข้อมูลหลักของ Laravel | `mysql` | ใช้สำหรับ connection เริ่มต้นและ artisan migrate |
+| DATASTORE_DRIVER | เลือก adapter ของ Repository | `eloquent` / `memory` | `memory` เหมาะกับ contract test หรือโหมดฉุกเฉิน |
+| DATASTORE_CONNECTION | ชื่อ connection ที่ adapter ประเภท eloquent ต้องใช้ | `sqlite` / `mysql` / `pgsql` / `sqlsrv` | ต้องตรงกับ alias ใน `config/database.php` |
 | DB_HOST | โฮสต์ฐานข้อมูล | `127.0.0.1` หรือ service name | สำหรับ docker ให้ใช้ชื่อ service |
 | DB_PORT | พอร์ตฐานข้อมูล | `3306` | |
 | DB_DATABASE | ชื่อฐานข้อมูล | `hospital` | สร้างก่อน migrate |

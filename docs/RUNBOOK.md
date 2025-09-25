@@ -52,6 +52,11 @@
 5. รีโหลด Nginx/PHP-FPM และทดสอบ `GET /api/health` อีกครั้ง
 6. บันทึกเหตุการณ์และบทเรียนลง postmortem ภายใน 24 ชั่วโมง
 
+### Rollback ฐานข้อมูลเมื่อ migrate ผิดพลาด
+- หากใช้ MySQL/PG ให้ใช้ snapshot ล่าสุดของ instance หรือ backup (*.sql) ที่เตรียมไว้ก่อน deploy
+- สำหรับ SQLite ให้คัดลอกไฟล์ฐานข้อมูลสำรองที่สร้างก่อน deploy กลับมาทับตำแหน่งเดิม แล้ว rerun `php artisan config:cache`
+- หากต้องการหยุดการเขียนข้อมูลชั่วคราว ให้สลับ `DATASTORE_DRIVER=memory` ใน `.env` แล้ว `php artisan config:clear` เพื่อให้ API ยังตอบสนองได้แม้ฐานข้อมูลหลักมีปัญหา (ข้อมูลที่เขียนในโหมดนี้จะไม่ถาวร)
+
 ## 6. การจัดการเหตุขัดข้อง (Incident Response)
 - **ระดับ P1 (ระบบใช้การไม่ได้):** แจ้ง Ops hotline ภายใน 5 นาที เรียก core team เข้าประชุมฉุกเฉิน
 - **ระดับ P2 (บางฟังก์ชันใช้งานไม่ได้):** แจ้งผ่าน Teams + สร้าง incident ticket ระบุผลกระทบ
@@ -75,3 +80,16 @@
 - [ ] อัปเดตสถานะ ticket ในระบบบริหารโครงการ (Jira/Linear)
 - [ ] ทำ sanity test 3 ฟังก์ชันหลัก (login, list news, create/update news)
 - [ ] ส่งรายงานสรุปให้ Product Owner และทีมสนับสนุน
+
+## 10. การเปิดใช้ฐานข้อมูลต่างชนิด (MySQL / PostgreSQL / SQLite / SQL Server)
+1. ตั้งค่า `.env` ให้ตรงกับชนิดที่ต้องการ เช่น `DB_CONNECTION=mysql`, `DATASTORE_DRIVER=eloquent`, `DATASTORE_CONNECTION=mysql`, ปรับ host/port/credential
+2. สร้างฐานข้อมูลและผู้ใช้ล่วงหน้า โดยจำกัดสิทธิ์ให้เฉพาะ schema ที่เกี่ยวข้อง (ดู `docs/SECURITY.md`)
+3. รัน `php artisan key:generate` หากไฟล์ `.env` ใหม่ยังไม่มี `APP_KEY`
+4. รัน `php artisan migrate --force` เพื่อสร้างตารางบน connection ใหม่ จากนั้น smoke test `GET /api/health`
+5. หากต้องสลับกลับมา SQLite ให้แก้ ENV เป็น `sqlite` ทั้งสองตัวและสร้างไฟล์ SQLite ตามเส้นทางที่กำหนด (เช่น `touch database/database.sqlite`)
+
+## 11. การสลับ driver เป็น Memory ชั่วคราว
+- แก้ `.env` ตั้ง `DATASTORE_DRIVER=memory` แล้วสั่ง `php artisan config:clear`
+- โหมดนี้จะเก็บข้อมูลใน process memory เท่านั้น ใช้ได้กับกรณีทดสอบหรือเมื่อฐานข้อมูลหลักล่มและต้องการตอบ 200 กับ endpoint บางตัว เช่น `/api/health`
+- เมื่อระบบฐานข้อมูลกลับมาปกติ ให้สลับกลับ `eloquent` และรัน `php artisan config:cache` + `php artisan migrate --force`
+- แจ้งทีมใช้งานว่า ข้อมูลที่เกิดขึ้นระหว่างใช้ memory adapter จะไม่ถูกบันทึกจริง ต้องบันทึกซ้ำเมื่อระบบหลักพร้อม
