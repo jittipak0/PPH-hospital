@@ -1,0 +1,58 @@
+name: backend-ci
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - 'docs/**'
+      - '.github/workflows/backend-ci.yml'
+      - 'README.md'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'docs/**'
+      - '.github/workflows/backend-ci.yml'
+      - 'README.md'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare environment
+        run: |
+          cat <<'EOF' > .env.testing
+          APP_ENV=testing
+          APP_KEY=
+          APP_DEBUG=true
+          APP_URL=http://localhost
+          DATASTORE_DRIVER=eloquent
+          DATASTORE_CONNECTION=sqlite
+          DB_CONNECTION=sqlite
+          DB_DATABASE=:memory:
+          EOF
+          cp .env.testing .env
+
+      - name: Generate key
+        run: php artisan key:generate --env=testing --force
+
+      - name: Run migrations
+        run: php artisan migrate --env=testing --force
+
+      - name: Run tests
+        run: vendor/bin/phpunit
