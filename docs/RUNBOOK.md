@@ -11,7 +11,7 @@
 - [ ] PR ทั้งหมด merge เข้า `main` และผ่าน CI (lint, test, build)
 - [ ] อัปเดต `docs/CHANGELOG.md` ระบุฟีเจอร์/แก้ไข/ผลกระทบ
 - [ ] ตรวจสอบ Migration ใหม่และเตรียมแผน rollback (มีสำรองข้อมูลล่าสุด)
-- [ ] ค่า ENV ใน staging = production (ยกเว้น secret) และทดสอบรอบสุดท้ายผ่าน Postman
+- [ ] ค่า ENV ใน staging = production (ยกเว้น secret) โดยเฉพาะ `DATASTORE_DRIVER`/`DATASTORE_CONNECTION` และทดสอบรอบสุดท้ายผ่าน Postman
 - [ ] แจ้งทีมที่เกี่ยวข้องอย่างน้อย 4 ชั่วโมงก่อน deploy
 
 ## 3. ขั้นตอน Deploy Production
@@ -20,8 +20,9 @@
 1. SSH เข้าเครื่อง production ด้วยบัญชีที่ได้รับอนุญาต
 2. ดึงโค้ดล่าสุด: `git fetch --all && git checkout main && git pull`
 3. ติดตั้ง dependency: `composer install --no-dev --prefer-dist --optimize-autoloader`
-4. ตรวจสอบไฟล์ `.env` ว่าอัปเดตค่าล่าสุดแล้ว (โดยเฉพาะ SANCTUM, DB, QUEUE)
-5. รัน migration: `php artisan migrate --force`
+4. ตรวจสอบไฟล์ `.env` ว่าอัปเดตค่าล่าสุดแล้ว (APP_KEY, SANCTUM, DB, QUEUE, DATASTORE\_*)
+   - หากยังไม่มี `APP_KEY` ให้รัน `php artisan key:generate --force`
+5. หาก `DATASTORE_DRIVER=eloquent` ให้รัน migration: `php artisan migrate --force`
 6. เคลียร์/คอมไพล์แคช: `php artisan config:cache && php artisan route:cache && php artisan view:cache`
 7. รีสตาร์ต queue worker (ถ้ามี): `php artisan queue:restart`
 
@@ -52,6 +53,8 @@
 5. รีโหลด Nginx/PHP-FPM และทดสอบ `GET /api/health` อีกครั้ง
 6. บันทึกเหตุการณ์และบทเรียนลง postmortem ภายใน 24 ชั่วโมง
 
+> หาก rollback แล้วต้องการกลับไปใช้ฐานข้อมูลหลัก ให้ตรวจสอบว่า `.env` ตั้ง `DATASTORE_DRIVER=eloquent` และ connection พร้อมก่อนเปิดบริการอีกครั้ง
+
 ## 6. การจัดการเหตุขัดข้อง (Incident Response)
 - **ระดับ P1 (ระบบใช้การไม่ได้):** แจ้ง Ops hotline ภายใน 5 นาที เรียก core team เข้าประชุมฉุกเฉิน
 - **ระดับ P2 (บางฟังก์ชันใช้งานไม่ได้):** แจ้งผ่าน Teams + สร้าง incident ticket ระบุผลกระทบ
@@ -63,6 +66,19 @@
 - ทดสอบการกู้คืนข้อมูลบน staging ทุกไตรมาสและอัปเดตเอกสารผลลัพธ์
 - ตรวจสอบการหมดอายุของ TLS certificate ก่อนถึงกำหนด 30 วัน
 - ตรวจสอบ security patch ของ Laravel, PHP, Node.js ทุกเดือน และวางแผนอัปเดต
+
+## 10. การจัดการฐานข้อมูลและการสลับ driver
+- **เปิดใช้ MySQL/PGSQL ใน production:**
+  1. ติดตั้งและเปิดบริการฐานข้อมูล (MySQL/PG) พร้อมสร้าง database/user ที่จำกัดสิทธิ์ (ดู `docs/SECURITY.md`).
+  2. เพิ่ม connection ใน `config/database.php` หากต้องใช้ alias เพิ่มเติม และตั้งค่า `.env` ให้ `DB_CONNECTION` และ `DATASTORE_CONNECTION` ตรงกับ alias นั้น
+  3. ตั้ง `DATASTORE_DRIVER=eloquent` แล้วรัน `php artisan migrate --force`
+- **สลับเป็น Memory ชั่วคราว:**
+  1. แก้ `.env` หรือ export env ชั่วคราว `DATASTORE_DRIVER=memory`
+  2. เคลียร์ cache (`php artisan config:clear`) และรีสตาร์ต queue/worker ที่พึ่งพา repository
+  3. ฟีเจอร์ที่เกี่ยวข้องกับฐานข้อมูลจะทำงานแบบ in-memory รีสตาร์ตบริการอีกครั้งและเปลี่ยนกลับเป็น `eloquent` เมื่อระบบหลักพร้อม
+- **การ rollback ฐานข้อมูล:**
+  - บันทึก snapshot/backup ก่อนรัน migration เสมอ
+  - ใช้ `php artisan migrate:rollback` เฉพาะกรณีที่ schema เปลี่ยนโดยปลอดภัย และตรวจสอบผลกระทบกับ service ก่อนเปิดให้ผู้ใช้
 
 ## 8. เครื่องมือที่เกี่ยวข้อง
 - **Monitoring:** UptimeRobot/Prometheus + Grafana (latency, error rate, CPU, memory)

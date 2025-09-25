@@ -1,0 +1,3 @@
+# Ignore generated bootstrap cache files
+*.php
+*.json
