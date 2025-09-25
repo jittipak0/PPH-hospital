@@ -1,6 +1,45 @@
 ﻿# DB.md – สคีมาฐานข้อมูลและหลักปฏิบัติ
 
-ระบบนี้เริ่มต้นที่โมดูลข่าวประชาสัมพันธ์และการจัดการผู้ใช้ทีมงาน เอกสารนี้ระบุสคีมาตั้งต้น ความสัมพันธ์ที่ต้องรู้ และแนวทางออกแบบฐานข้อมูลเพิ่มเติมเมื่อขยายโดเมน
+ระบบนี้เริ่มต้นที่โมดูลข่าวประชาสัมพันธ์และการจัดการผู้ใช้ทีมงาน เอกสารนี้ระบุสคีมาตั้งต้น แนวทางเชื่อมต่อฐานข้อมูลด้วยสถาปัตยกรรม Hexagonal (Ports & Adapters) และแนวปฏิบัติเมื่อต้องขยายโดเมน
+
+## 0. Ports & Adapters
+
+```mermaid
+flowchart LR
+    subgraph Domain
+        portUser[UserRepository Interface]
+        entityUser[(User Entity)]
+    end
+
+    subgraph Application
+        usecaseList[ListUsers UseCase]
+        usecaseCreate[CreateUser UseCase]
+    end
+
+    subgraph Infrastructure
+        adapterEloquent[Eloquent UserRepository]
+        adapterMemory[In-memory UserRepository]
+        db[(Database Connection)]
+    end
+
+    portUser --> usecaseList
+    portUser --> usecaseCreate
+    usecaseList --> portUser
+    usecaseCreate --> portUser
+    portUser <-->|driver=eloquent| adapterEloquent
+    portUser <-->|driver=memory| adapterMemory
+    adapterEloquent -->|connection alias| db
+```
+
+- `config/datastore.php` เป็นจุด map ระหว่าง interface → adapter → connection
+- Service Container จะอ่านค่า `DATASTORE_DRIVER`/`DATASTORE_CONNECTION` ทุกครั้งที่ resolve repository เพื่อให้เปลี่ยน runtime ได้
+- Adapter ฝั่ง Eloquent จะตั้ง connection ตาม alias โดยอัตโนมัติ ทำให้รองรับหลายฐานข้อมูลภายใต้โค้ดเดียวกัน
+
+### ตาราง mapping หลัก
+
+| Interface | Adapter (eloquent) | Adapter (memory) | Connection |
+| --- | --- | --- | --- |
+| `App\Domain\User\Contracts\UserRepository` | `App\Infrastructure\Persistence\Eloquent\UserRepository` | `App\Infrastructure\Persistence\Memory\UserRepository` | กำหนดผ่าน `DATASTORE_CONNECTION` (ค่าเริ่มต้น `sqlite`) |
 
 ## 1. ตารางหลักที่มีในสตาร์ตเตอร์
 
