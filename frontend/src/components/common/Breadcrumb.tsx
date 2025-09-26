@@ -1,21 +1,34 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useI18n } from '../../lib/i18n'
+import { siteSections } from '../../config/siteMap'
 
-const breadcrumbMap: Record<string, string> = {
+const staticBreadcrumbs: Record<string, string> = {
   '/': 'หน้าแรก',
-  '/about': 'เกี่ยวกับเรา',
-  '/services': 'บริการผู้ป่วย',
   '/appointment': 'นัดหมายแพทย์',
   '/doctors': 'ค้นหาแพทย์',
   '/news': 'ข่าวสาร/กิจกรรม',
-  '/contact': 'ติดต่อเรา'
+  '/contact': 'ติดต่อเรา',
+  '/privacy-policy': 'นโยบายความเป็นส่วนตัว',
+  '/terms': 'เงื่อนไขการใช้งาน'
 }
 
 export const Breadcrumb: React.FC = () => {
   const location = useLocation()
   const { t } = useI18n()
   const path = location.pathname
+
+  const labelMap = useMemo(() => {
+    const map = new Map<string, string>()
+    Object.entries(staticBreadcrumbs).forEach(([key, value]) => map.set(key, value))
+    siteSections.forEach((section) => {
+      map.set(section.path, section.label)
+      section.children?.forEach((child) => {
+        map.set(child.path, child.label)
+      })
+    })
+    return map
+  }, [])
 
   if (path === '/') return null
 
@@ -26,7 +39,7 @@ export const Breadcrumb: React.FC = () => {
       const url = `/${array.slice(0, index + 1).join('/')}`
       return {
         url,
-        label: breadcrumbMap[url] ?? segment
+        label: labelMap.get(url) ?? segment
       }
     })
 
