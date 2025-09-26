@@ -1,5 +1,6 @@
 import React from 'react'
 import type { NewsItem } from '../../lib/api'
+import styles from './NewsCard.module.scss'
 
 interface NewsCardProps {
   news: NewsItem
@@ -14,47 +15,21 @@ export const NewsCard: React.FC<NewsCardProps> = ({ news, onSelect }) => {
   })
 
   return (
-    <article className="card news-card">
-      <img src={`${news.imageUrl}?auto=format&fit=crop&w=600&q=80`} alt="ภาพประกอบข่าว" loading="lazy" />
-      <div className="news-card__body">
-        <p className="news-card__date">เผยแพร่ {formattedDate}</p>
+    <article className={'card ' + styles.newsCard}>
+      <img
+        className={styles.thumbnail}
+        src={news.imageUrl + '?auto=format&fit=crop&w=600&q=80'}
+        alt="ภาพประกอบข่าว"
+        loading="lazy"
+      />
+      <div className={styles.body}>
+        <p className={styles.date}>เผยแพร่ {formattedDate}</p>
         <h3>{news.title}</h3>
         <p>{news.summary}</p>
-        <button type="button" onClick={() => onSelect?.(news)} className="news-card__button">
+        <button type="button" onClick={() => onSelect?.(news)} className={'btn btn-secondary ' + styles.button}>
           อ่านรายละเอียด
         </button>
       </div>
-      <style>{`
-        .news-card {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          padding: 0;
-          overflow: hidden;
-        }
-        .news-card img {
-          width: 100%;
-          height: 180px;
-          object-fit: cover;
-        }
-        .news-card__body {
-          padding: 1.25rem;
-        }
-        .news-card__date {
-          font-size: 0.9rem;
-          color: var(--color-muted);
-        }
-        .news-card__button {
-          margin-top: 1rem;
-          border: none;
-          background: var(--color-primary);
-          color: #fff;
-          padding: 0.6rem 1.2rem;
-          border-radius: 999px;
-          cursor: pointer;
-          font-weight: 600;
-        }
-      `}</style>
     </article>
   )
 }

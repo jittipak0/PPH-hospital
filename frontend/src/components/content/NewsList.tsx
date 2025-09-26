@@ -1,6 +1,7 @@
 import React from 'react'
 import type { NewsItem } from '../../lib/api'
 import { NewsCard } from './NewsCard'
+import styles from './NewsList.module.scss'
 
 interface NewsListProps {
   news: NewsItem[]
@@ -13,17 +14,10 @@ export const NewsList: React.FC<NewsListProps> = ({ news, onSelect }) => {
   }
 
   return (
-    <div className="news-list">
+    <div className={styles.newsList}>
       {news.map((item) => (
         <NewsCard key={item.id} news={item} onSelect={onSelect} />
       ))}
-      <style>{`
-        .news-list {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 1.5rem;
-        }
-      `}</style>
     </div>
   )
 }

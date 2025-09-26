@@ -1,4 +1,5 @@
 import React from 'react'
+import styles from './SearchBar.module.scss'
 
 interface SearchBarProps {
   value: string
@@ -8,27 +9,15 @@ interface SearchBarProps {
 
 export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, placeholder }) => {
   return (
-    <label className="search-bar">
+    <label className={styles.searchBar}>
       <span className="visually-hidden">ค้นหา</span>
       <input
+        className={styles.input}
         type="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder ?? 'ค้นหาชื่อแพทย์หรือสาขา'}
       />
-      <style>{`
-        .search-bar {
-          display: flex;
-          width: 100%;
-        }
-        .search-bar input {
-          width: 100%;
-          padding: 0.75rem 1rem;
-          border-radius: 999px;
-          border: 1px solid rgba(15, 23, 42, 0.2);
-          font-size: 1rem;
-        }
-      `}</style>
     </label>
   )
 }

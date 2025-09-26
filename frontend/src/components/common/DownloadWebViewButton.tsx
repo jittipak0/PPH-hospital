@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import JSZip from 'jszip'
 import { useI18n } from '../../lib/i18n'
+import styles from './DownloadWebViewButton.module.scss'
 
 interface DownloadWebViewButtonProps {
   className?: string
@@ -289,7 +290,7 @@ export const DownloadWebViewButton: React.FC<DownloadWebViewButtonProps> = ({ cl
     <>
       <button
         type="button"
-        className={[className, 'download-webview-button'].filter(Boolean).join(' ')}
+        className={[styles.downloadButton, className].filter(Boolean).join(' ')}
         onClick={() => {
           void handleDownload()
         }}
@@ -297,45 +298,11 @@ export const DownloadWebViewButton: React.FC<DownloadWebViewButtonProps> = ({ cl
         disabled={isPreparing}
         aria-busy={isPreparing}
       >
-        <span className="download-webview-button__icon" aria-hidden="true">
+        <span className={styles.icon} aria-hidden="true">
           {isPreparing ? '⏳' : '⬇️'}
         </span>
         <span>{buttonLabel}</span>
       </button>
-      <style>{`
-        .download-webview-button {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-          padding: 0.6rem 1.2rem;
-          border-radius: 999px;
-          border: 2px solid var(--color-primary);
-          background-color: transparent;
-          color: var(--color-primary);
-          font-weight: 700;
-          cursor: pointer;
-          text-decoration: none;
-          transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
-        }
-        .download-webview-button:hover,
-        .download-webview-button:focus-visible {
-          background-color: var(--color-primary);
-          color: #fff;
-        }
-        .download-webview-button:focus-visible {
-          outline: 3px solid var(--color-secondary);
-          outline-offset: 3px;
-        }
-        .download-webview-button[disabled] {
-          cursor: not-allowed;
-          opacity: 0.7;
-        }
-        .download-webview-button__icon {
-          font-size: 1.1rem;
-          line-height: 1;
-        }
-      `}</style>
     </>
   )
 }

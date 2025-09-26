@@ -1,0 +1,17 @@
+.gridLayout {
+  display: grid;
+  gap: var(--grid-gap, 1.5rem);
+  grid-template-columns: repeat(var(--grid-columns, 3), minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+  .gridLayout {
+    grid-template-columns: repeat(var(--grid-columns-md, 2), minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .gridLayout {
+    grid-template-columns: repeat(var(--grid-columns-sm, 1), minmax(0, 1fr));
+  }
+}

@@ -5,6 +5,7 @@ import { LanguageSwitcher } from './LanguageSwitcher'
 import { ThemeToggle } from './ThemeToggle'
 import { DownloadWebViewButton } from './DownloadWebViewButton'
 import { useAuth } from '../../context/AuthContext'
+import styles from './Navbar.module.scss'
 
 interface NavbarProps {
   onIncreaseFont: () => void
@@ -32,13 +33,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
   const handleLinkClick = () => setOpen(false)
 
   return (
-    <header className="navbar">
-      <div className="navbar__inner">
-        <Link to="/" className="navbar__brand" onClick={handleLinkClick}>
-          โรงพยาบาลโพนพิสัย
+    <header className={styles.navbar}>
+      <div className={styles.inner}>
+        <Link to="/" className={styles.brand} onClick={handleLinkClick}>
+          <span className={styles.brandMark} aria-hidden="true">
+            PPH
+          </span>
+          <span className={styles.brandText}>โรงพยาบาลโพนพิสัย</span>
         </Link>
         <button
-          className="navbar__toggle"
+          className={styles.toggle}
           aria-expanded={open}
           aria-controls="main-navigation"
           onClick={handleToggleMenu}
@@ -46,41 +50,69 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
           <span className="visually-hidden">เปิด/ปิดเมนู</span>
           ☰
         </button>
-        <nav id="main-navigation" className={`navbar__nav ${open ? 'is-open' : ''}`} aria-label="เมนูหลัก">
-          <ul>
+        <nav
+          id="main-navigation"
+          className={`${styles.nav} ${open ? styles.navOpen : ''}`.trim()}
+          aria-label="เมนูหลัก"
+        >
+          <ul className={styles.navList}>
             {navItems.map((item) => (
               <li key={item.key}>
-                <NavLink to={item.to} onClick={handleLinkClick}>
+                <NavLink
+                  to={item.to}
+                  onClick={handleLinkClick}
+                  className={({ isActive }) =>
+                    `${styles.navLink} ${isActive ? styles.activeLink : ''}`.trim()
+                  }
+                >
                   {t(item.key)}
                 </NavLink>
               </li>
             ))}
             {isAuthenticated ? (
               <li key="dashboard">
-                <NavLink to="/dashboard" onClick={handleLinkClick}>
+                <NavLink
+                  to="/dashboard"
+                  onClick={handleLinkClick}
+                  className={({ isActive }) =>
+                    `${styles.navLink} ${isActive ? styles.activeLink : ''}`.trim()
+                  }
+                >
                   แดชบอร์ด ({user?.role})
                 </NavLink>
               </li>
             ) : (
               <li key="login">
-                <NavLink to="/login" onClick={handleLinkClick}>
+                <NavLink
+                  to="/login"
+                  onClick={handleLinkClick}
+                  className={({ isActive }) =>
+                    `${styles.navLink} ${isActive ? styles.activeLink : ''}`.trim()
+                  }
+                >
                   เข้าสู่ระบบบุคลากร
                 </NavLink>
               </li>
             )}
             <li key="privacy">
-              <NavLink to="/privacy-policy" onClick={handleLinkClick}>
+              <NavLink
+                to="/privacy-policy"
+                onClick={handleLinkClick}
+                className={({ isActive }) =>
+                  `${styles.navLink} ${isActive ? styles.activeLink : ''}`.trim()
+                }
+              >
                 นโยบายความเป็นส่วนตัว
               </NavLink>
             </li>
           </ul>
-          <div className="navbar__actions">
+          <div className={styles.actions}>
             {isAuthenticated ? (
-              <button className="navbar__logout" onClick={logout}>
+              <button className={styles.logoutButton} onClick={logout}>
                 ออกจากระบบ
               </button>
             ) : null}
-            <DownloadWebViewButton className="navbar__download" />
+            <DownloadWebViewButton className={`${styles.downloadButton} btn btn-secondary`} />
             <LanguageSwitcher />
             <ThemeToggle
               onIncreaseFont={onIncreaseFont}
@@ -91,111 +123,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
           </div>
         </nav>
       </div>
-      <style>{`
-        .navbar {
-          background-color: var(--color-surface);
-          box-shadow: var(--shadow-sm);
-          position: sticky;
-          top: 0;
-          z-index: 50;
-        }
-        .navbar__inner {
-          width: min(1120px, 92vw);
-          margin: 0 auto;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 1rem 0;
-        }
-        .navbar__brand {
-          font-weight: 700;
-          font-size: 1.25rem;
-          color: var(--color-primary);
-          text-decoration: none;
-        }
-        .navbar__toggle {
-          border: none;
-          background: transparent;
-          font-size: 1.75rem;
-          display: none;
-          cursor: pointer;
-          color: var(--color-primary);
-        }
-        .navbar__nav {
-          display: flex;
-          align-items: center;
-          gap: 1.5rem;
-        }
-        .navbar__nav ul {
-          display: flex;
-          list-style: none;
-          gap: 1.25rem;
-          margin: 0;
-          padding: 0;
-        }
-        .navbar__nav a {
-          text-decoration: none;
-          color: var(--color-text);
-          font-weight: 600;
-        }
-        .navbar__nav a.active {
-          color: var(--color-primary);
-        }
-        .navbar__actions {
-          display: flex;
-          gap: 0.75rem;
-          align-items: center;
-        }
-        .navbar__download {
-          padding: 0.5rem 1.1rem;
-          font-size: 0.95rem;
-        }
-        .navbar__download .download-webview-button__icon {
-          font-size: 0.95rem;
-        }
-        .navbar__logout {
-          background: #ef4444;
-          color: white;
-          border: none;
-          padding: 0.5rem 1rem;
-          border-radius: 10px;
-          cursor: pointer;
-        }
-        @media (max-width: 960px) {
-          .navbar__toggle {
-            display: block;
-          }
-          .navbar__nav {
-            position: absolute;
-            inset: 70px 0 auto 0;
-            background-color: var(--color-surface);
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 1.5rem;
-            gap: 1rem;
-            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-            transform: translateY(-120%);
-            transition: transform 0.3s ease;
-          }
-          .navbar__nav.is-open {
-            transform: translateY(0);
-          }
-          .navbar__nav ul {
-            flex-direction: column;
-            width: 100%;
-          }
-          .navbar__actions {
-            width: 100%;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-          }
-          .navbar__download {
-            width: 100%;
-            justify-content: center;
-          }
-        }
-      `}</style>
     </header>
   )
 }
