@@ -13,14 +13,10 @@ export const Footer: React.FC = () => {
         <nav aria-label="ลิงก์สำคัญ">
           <ul>
             <li>
-              <a href="https://www.example-hospital.go.th/privacy" target="_blank" rel="noopener noreferrer">
-                นโยบายความเป็นส่วนตัว
-              </a>
+              <Link to="/donation">การรับบริจาค</Link>
             </li>
             <li>
-              <a href="https://www.example-hospital.go.th/terms" target="_blank" rel="noopener noreferrer">
-                เงื่อนไขการใช้งาน
-              </a>
+              <Link to="/feedback/satisfaction">ประเมินความพึงพอใจ</Link>
             </li>
             <li>
               <Link to="/sitemap">แผนผังเว็บไซต์</Link>

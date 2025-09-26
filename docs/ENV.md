@@ -1,41 +1,35 @@
-﻿# ENV.md – ตัวแปรแวดล้อมที่ต้องใช้
+# ENV.md – ตัวแปรแวดล้อมที่ต้องตั้งค่า
 
-ตารางนี้สรุปตัวแปรสำคัญสำหรับทั้งฝั่ง Laravel API และ React Frontend เพื่อให้ทีมตั้งค่าได้ถูกต้องทั้งใน dev, staging และ production โปรดบันทึกความลับลงใน Secret Manager หรือ `.env` ที่ไม่ถูก commit ตามนโยบายความปลอดภัย
+เอกสารนี้รวบรวม environment variables ที่จำเป็นสำหรับ Laravel (backend) และ Vite (frontend) หลังจากดึงโค้ดมาใหม่ให้ตรวจสอบไฟล์ `.env.example` ทั้งสองฝั่งเสมอ การตั้งค่าที่สำคัญต่อฟีเจอร์ใหม่ (CMS + แบบฟอร์ม) ถูกสรุปไว้ด้านล่าง
 
 ## Backend (Laravel)
-| Key | ใช้ทำอะไร | ค่าแนะนำ (ตัวอย่าง) | หมายเหตุ |
+| Key | ใช้ทำอะไร | ตัวอย่างค่า | หมายเหตุ |
 | --- | --- | --- | --- |
-| APP_NAME | ชื่อระบบ | `HospitalAPI` | แสดงใน log / queue |
-| APP_ENV | โหมดการทำงาน | `local` / `staging` / `production` | มีผลกับ debug และ caching |
-| APP_KEY | คีย์เข้ารหัส | `base64:...` | สร้างด้วย `php artisan key:generate` ห้ามใช้ซ้ำข้ามระบบ |
-| APP_DEBUG | เปิด error detail | `true` (dev) / `false` (prod) | ปิดใน production เสมอ |
-| APP_URL | URL หลักของ API | `https://api.hospital.local` | ใช้สร้างลิงก์และลิงก์ในอีเมล |
-| LOG_CHANNEL | ช่องทาง log | `stack` | พิจารณาเปิด syslog/sentry เพิ่ม |
-| DB_CONNECTION | ชนิดฐานข้อมูลเริ่มต้นของ Laravel | `mysql` | ใช้กับ connection อื่น ๆ หาก `DATASTORE_CONNECTION` ไม่ได้ตั้งไว้ |
-| DATASTORE_DRIVER | ตัวเลือก adapter ของ repository | `eloquent` / `memory` | `memory` ใช้สำหรับเทสหรือ fallback แบบ in-memory |
-| DATASTORE_CONNECTION | alias connection ที่ adapter Eloquent ต้องใช้ | `sqlite` / `mysql` / `pgsql` / `sqlsrv` | ต้องมีการคอนฟิกใน `config/database.php` |
-| DB_HOST | โฮสต์ฐานข้อมูล | `127.0.0.1` หรือ service name | สำหรับ docker ให้ใช้ชื่อ service |
-| DB_PORT | พอร์ตฐานข้อมูล | `3306` | |
-| DB_DATABASE | ชื่อฐานข้อมูล | `hospital` | สร้างก่อน migrate |
-| DB_USERNAME | ผู้ใช้ฐานข้อมูล | `hospital_app` | จำกัดสิทธิ์เฉพาะ CRUD |
-| DB_PASSWORD | รหัสผ่านฐานข้อมูล | `********` | เก็บใน secret manager |
-| SANCTUM_STATEFUL_DOMAINS | รายการโดเมนที่แชร์ cookie | `hospital.local,localhost` | จำเป็นเมื่อ frontend ใช้ cookie-based auth |
-| SESSION_DRIVER | ตัวจัดการ session | `cookie` หรือ `file` | API-only สามารถตั้งเป็น `cookie` |
-| CACHE_DRIVER | ตัวจัดการแคช | `file` / `redis` | เปิด redis ใน production เพื่อประสิทธิภาพ |
-| QUEUE_CONNECTION | งานคิว | `sync` (dev) / `redis` (prod) | หากใช้ queue worker ให้ตั้ง systemd เพิ่ม |
-| MAIL_MAILER | ส่งอีเมล | `smtp` | ตั้งค่า mail host/username/password เพิ่มเติม |
-| BROADCAST_DRIVER | Realtime | `log` / `pusher` / `redis` | เปิดเมื่อใช้ WebSocket/SSE |
+| APP_NAME | ชื่อระบบ | `PPH Hospital API` | แสดงใน mail/log |
+| APP_ENV | โหมดระบบ | `local` / `staging` / `production` | มีผลกับ debug, cache |
+| APP_KEY | คีย์เข้ารหัส | `base64:...` | สร้างด้วย `php artisan key:generate` |
+| APP_URL | URL ของ API | `https://api.hospital.local` | ใช้เป็น base ตอนสร้างลิงก์ไฟล์ `uploads` |
+| FILESYSTEM_DISK | ดิสก์หลัก | `local` หรือ `s3` | ค่าเริ่มต้นคือ `local` |
+| FILE_MAX_MB | จำกัดขนาดไฟล์อัปโหลด | `10` | ใช้ใน FormRequest สำหรับเวชระเบียน/ใบเสร็จ |
+| FRONTEND_ORIGIN | อนุญาต CORS | `https://hospital.local` | ถูกอ่านใน `config/cors.php` |
+| SANCTUM_STATEFUL_DOMAINS | รายการโดเมนที่แชร์ session | `hospital.local,localhost:5173` | ต้องตรงกับ origin ของ frontend |
+| NOTIFY_EMAIL | อีเมลแจ้งเตือนคำร้อง | `forms@hospital.local` | หากเว้นว่างระบบจะไม่ส่งอีเมล |
+| MAIL_MAILER + MAIL_* | การส่งอีเมล | `smtp`, host, port, user, pass | ใช้เมื่อเปิดแจ้งเตือนแบบ queue |
+| QUEUE_CONNECTION | งานคิว | `database` / `redis` | แนะนำใช้ queue เมื่อเปิดส่งอีเมล |
+| DB_CONNECTION + DB_* | ตั้งค่าฐานข้อมูล | `sqlite` (dev) หรือ `mysql` (prod) | ดูรายละเอียดการสลับใน `docs/DB.md` |
 
-## Frontend (Vite / React)
-| Key | ใช้ทำอะไร | ค่าแนะนำ (ตัวอย่าง) | หมายเหตุ |
+> หลังเปลี่ยนค่าเกี่ยวกับ storage ให้รัน `php artisan storage:link` เพื่อสร้าง symlink `/public/storage/uploads`
+
+## Frontend (Vite/React)
+| Key | ใช้ทำอะไร | ตัวอย่างค่า | หมายเหตุ |
 | --- | --- | --- | --- |
-| VITE_API_BASE_URL | จุดเชื่อมต่อ API หลัก | `http://localhost:8000` (dev) / `https://api.hospital.local` (prod) | หากไม่ระบุจะ fallback เป็น origin ของเว็บ |
-| VITE_APP_NAME | ชื่อที่จะแสดงใน UI | `Hospital Portal` | ใช้ใน header / title |
-| VITE_ENABLE_MOCK | เปิดโหมด mock API | `false` (default) | เมื่อจำลองให้ตั้ง `true` และเตรียมไฟล์ mock ใน `src/lib` |
+| VITE_API_BASE_URL | ชี้ไปยัง API | `http://localhost:8000` | หากไม่ตั้งค่าจะ fallback เป็น origin |
+| VITE_APP_NAME | ชื่อที่ใช้ใน UI | `โรงพยาบาลโพนพิสัย` | แสดงบนแท็บ/ส่วนหัว |
+| SITEMAP_BASE_URL (optional) | ใช้โดยสคริปต์สร้าง `sitemap.xml` | `https://hospital.local` | ตั้งผ่าน `npm run prebuild` (อ่านจาก env runtime) |
 
-## แนวทางบริหารจัดการค่า ENV
-- สร้างไฟล์ `.env.example` ที่มีค่า placeholder เพื่อให้ onboarding ง่ายขึ้น แต่ห้ามใส่ค่า secret จริง
-- Production ควรโหลดค่า ENV ผ่านระบบจัดการความลับ (เช่น AWS SSM, GCP Secret Manager) แล้ว inject ตอน deploy
-- ตรวจสอบความถูกต้องด้วย `php artisan config:cache` และ `php artisan config:show` (dev) ก่อน deploy ขึ้นจริง
-- หมุนเวียนคีย์สำคัญ (DB, APP_KEY, API token) อย่างน้อยปีละ 1 ครั้งหรือเมื่อเกิดเหตุ security incident
-- บันทึกค่า ENV ที่สำคัญพร้อมเจ้าของในสเปรดชีตหรือ CMDB เพื่อให้ติดตามการเปลี่ยนแปลงได้
+## ขั้นตอนแนะนำหลังแก้ไข `.env`
+1. คัดลอก `.env.example` → `.env` ทั้ง backend และ frontend
+2. กรอกค่าตามสภาพแวดล้อม (dev/staging/prod)
+3. รัน `php artisan config:clear && php artisan config:cache`
+4. รัน `php artisan migrate --seed` เพื่อให้ตาราง/ข้อมูลอัปเดต
+5. ฝั่ง frontend ให้รัน `npm install` (ครั้งแรก) และ `npm run build` ซึ่งจะเรียก `npm run prebuild` เพื่อสร้าง `public/sitemap.xml`
