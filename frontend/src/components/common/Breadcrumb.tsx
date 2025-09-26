@@ -1,44 +1,45 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useI18n } from '../../lib/i18n'
+import { PAGES } from '../../pages.config'
 
-const breadcrumbMap: Record<string, string> = {
-  '/': 'หน้าแรก',
-  '/about': 'เกี่ยวกับเรา',
-  '/services': 'บริการผู้ป่วย',
-  '/appointment': 'นัดหมายแพทย์',
-  '/doctors': 'ค้นหาแพทย์',
-  '/news': 'ข่าวสาร/กิจกรรม',
-  '/contact': 'ติดต่อเรา'
+const fallbackLabels: Record<string, string> = {
+  forms: 'แบบฟอร์มออนไลน์',
+  feedback: 'แบบประเมิน',
+  internal: 'สำหรับบุคลากร',
+  donation: 'การรับบริจาค',
+  online: 'บริการออนไลน์'
 }
+
+const pageMap = new Map(PAGES.map((page) => [page.path, page.title]))
 
 export const Breadcrumb: React.FC = () => {
   const location = useLocation()
-  const { t } = useI18n()
   const path = location.pathname
 
-  if (path === '/') return null
+  if (path === '/') {
+    return null
+  }
 
-  const crumbs = path
-    .split('/')
-    .filter(Boolean)
-    .map((segment, index, array) => {
-      const url = `/${array.slice(0, index + 1).join('/')}`
-      return {
-        url,
-        label: breadcrumbMap[url] ?? segment
-      }
-    })
+  const segments = path.split('/').filter(Boolean)
+  const crumbs = segments.map((segment, index) => {
+    const url = `/${segments.slice(0, index + 1).join('/')}`
+    const label = pageMap.get(url) ?? fallbackLabels[segment] ?? segment
+    return { url, label }
+  })
 
   return (
     <nav aria-label="breadcrumb" className="breadcrumb">
       <ol>
         <li>
-          <Link to="/">{t('nav.home')}</Link>
+          <Link to="/">หน้าแรก</Link>
         </li>
         {crumbs.map((crumb) => (
           <li key={crumb.url} aria-current={crumb.url === path ? 'page' : undefined}>
-            {crumb.url === path ? crumb.label : <Link to={crumb.url}>{crumb.label}</Link>}
+            {crumb.url === path ? (
+              <span>{crumb.label}</span>
+            ) : (
+              <Link to={crumb.url}>{crumb.label}</Link>
+            )}
           </li>
         ))}
       </ol>
@@ -69,6 +70,9 @@ export const Breadcrumb: React.FC = () => {
         .breadcrumb a {
           text-decoration: none;
           color: var(--color-primary);
+          font-weight: 600;
+        }
+        .breadcrumb span {
           font-weight: 600;
         }
       `}</style>
