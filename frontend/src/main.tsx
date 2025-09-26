@@ -5,7 +5,6 @@ import './index.css'
 import { AuthProvider } from './context/AuthContext'
 import { ConsentProvider } from './context/ConsentContext'
 import { I18nProvider } from './lib/i18n'
-import { ToastProvider } from './components/common/ToastProvider'
 import './registerServiceWorker'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
@@ -13,9 +12,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <I18nProvider>
       <ConsentProvider>
         <AuthProvider>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
+          <App />
         </AuthProvider>
       </ConsentProvider>
     </I18nProvider>
