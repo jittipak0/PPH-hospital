@@ -1,5 +1,6 @@
 import React from 'react'
 import { Container } from './Container'
+import styles from './PageSection.module.scss'
 
 interface PageSectionProps {
   id?: string
@@ -10,36 +11,21 @@ interface PageSectionProps {
 }
 
 export const PageSection: React.FC<PageSectionProps> = ({ id, title, description, children, background = 'default' }) => {
+  const sectionClass = [styles.pageSection, background === 'muted' ? styles.pageSectionMuted : null]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <section id={id} aria-labelledby={`${id ?? title}-heading`} className={`page-section page-section--${background}`}>
+    <section id={id} aria-labelledby={`${id ?? title}-heading`} className={sectionClass}>
       <Container>
-        <header className="page-section__header">
-          <h2 id={`${id ?? title}-heading`}>{title}</h2>
-          {description && <p className="page-section__description">{description}</p>}
+        <header className={styles.header}>
+          <h2 id={`${id ?? title}-heading`} className={styles.title}>
+            {title}
+          </h2>
+          {description ? <p className={styles.description}>{description}</p> : null}
         </header>
-        <div className="page-section__body">{children}</div>
+        <div className={styles.body}>{children}</div>
       </Container>
-      <style>{`
-        .page-section {
-          padding: 3rem 0;
-        }
-        .page-section--muted {
-          background-color: rgba(13, 110, 253, 0.04);
-        }
-        .page-section__header h2 {
-          margin-top: 0;
-          font-size: clamp(1.6rem, 3vw, 2rem);
-          color: var(--color-primary);
-        }
-        .page-section__description {
-          color: var(--color-muted);
-          font-size: 1rem;
-          max-width: 720px;
-        }
-        .page-section__body {
-          margin-top: 1.5rem;
-        }
-      `}</style>
     </section>
   )
 }

@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { api, type Doctor } from '../../lib/api'
 import { appointmentSchema, type AppointmentFormValues } from '../../lib/validators'
 import { useAppointment } from '../../hooks/useAppointment'
+import styles from './AppointmentForm.module.scss'
 
 const CAPTCHA_TOKEN = '1234'
 
@@ -101,32 +102,52 @@ export const AppointmentForm: React.FC = () => {
   }
 
   if (error) {
-    return <p role="alert" style={{ color: 'crimson' }}>{error}</p>
+    return (
+      <p role="alert" className={styles.error}>
+        {error}
+      </p>
+    )
   }
 
   return (
-    <form className="card appointment-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-      <fieldset disabled={status === 'submitting'}>
+    <form className={`card ${styles.appointmentForm}`} onSubmit={handleSubmit(onSubmit)} noValidate>
+      <fieldset className={styles.fieldset} disabled={status === 'submitting'}>
         <legend>นัดหมายแพทย์ออนไลน์</legend>
-        <div className="form-grid">
-          <label>
+        <div className={styles.formGrid}>
+          <label className={styles.label}>
             ชื่อ-นามสกุลผู้ป่วย
-            <input type="text" {...register('fullName')} aria-invalid={Boolean(errors.fullName)} />
-            {errors.fullName && <span className="error">{errors.fullName.message}</span>}
+            <input
+              className={styles.input}
+              type="text"
+              {...register('fullName')}
+              aria-invalid={Boolean(errors.fullName)}
+            />
+            {errors.fullName ? <span className={styles.error}>{errors.fullName.message}</span> : null}
           </label>
-          <label>
+          <label className={styles.label}>
             เลขบัตรประชาชน 13 หลัก
-            <input type="text" inputMode="numeric" {...register('nationalId')} aria-invalid={Boolean(errors.nationalId)} />
-            {errors.nationalId && <span className="error">{errors.nationalId.message}</span>}
+            <input
+              className={styles.input}
+              type="text"
+              inputMode="numeric"
+              {...register('nationalId')}
+              aria-invalid={Boolean(errors.nationalId)}
+            />
+            {errors.nationalId ? <span className={styles.error}>{errors.nationalId.message}</span> : null}
           </label>
-          <label>
+          <label className={styles.label}>
             รหัสผู้ป่วย (ถ้ามี)
-            <input type="text" {...register('patientCode')} aria-invalid={Boolean(errors.patientCode)} />
-            {errors.patientCode && <span className="error">{errors.patientCode.message}</span>}
+            <input
+              className={styles.input}
+              type="text"
+              {...register('patientCode')}
+              aria-invalid={Boolean(errors.patientCode)}
+            />
+            {errors.patientCode ? <span className={styles.error}>{errors.patientCode.message}</span> : null}
           </label>
-          <label>
+          <label className={styles.label}>
             เลือกแผนกที่ต้องการเข้ารับบริการ
-            <select {...register('department')} aria-invalid={Boolean(errors.department)}>
+            <select className={styles.select} {...register('department')} aria-invalid={Boolean(errors.department)}>
               <option value="">-- กรุณาเลือก --</option>
               {departmentOptions.map((department) => (
                 <option value={department} key={department}>
@@ -134,11 +155,11 @@ export const AppointmentForm: React.FC = () => {
                 </option>
               ))}
             </select>
-            {errors.department && <span className="error">{errors.department.message}</span>}
+            {errors.department ? <span className={styles.error}>{errors.department.message}</span> : null}
           </label>
-          <label>
+          <label className={styles.label}>
             เลือกแพทย์
-            <select {...register('doctorId')} aria-invalid={Boolean(errors.doctorId)}>
+            <select className={styles.select} {...register('doctorId')} aria-invalid={Boolean(errors.doctorId)}>
               <option value="">-- กรุณาเลือก --</option>
               {doctorsInDepartment.map((doctor) => (
                 <option key={doctor.id} value={doctor.id}>
@@ -146,26 +167,42 @@ export const AppointmentForm: React.FC = () => {
                 </option>
               ))}
             </select>
-            {errors.doctorId && <span className="error">{errors.doctorId.message}</span>}
+            {errors.doctorId ? <span className={styles.error}>{errors.doctorId.message}</span> : null}
           </label>
-          <label>
+          <label className={styles.label}>
             วันที่ต้องการนัดหมาย
-            <input type="date" {...register('appointmentDate')} aria-invalid={Boolean(errors.appointmentDate)} />
-            {errors.appointmentDate && <span className="error">{errors.appointmentDate.message}</span>}
+            <input
+              className={styles.input}
+              type="date"
+              {...register('appointmentDate')}
+              aria-invalid={Boolean(errors.appointmentDate)}
+            />
+            {errors.appointmentDate ? <span className={styles.error}>{errors.appointmentDate.message}</span> : null}
           </label>
-          <label>
+          <label className={styles.label}>
             เวลาที่ต้องการนัดหมาย
-            <input type="time" {...register('appointmentTime')} aria-invalid={Boolean(errors.appointmentTime)} />
-            {errors.appointmentTime && <span className="error">{errors.appointmentTime.message}</span>}
+            <input
+              className={styles.input}
+              type="time"
+              {...register('appointmentTime')}
+              aria-invalid={Boolean(errors.appointmentTime)}
+            />
+            {errors.appointmentTime ? <span className={styles.error}>{errors.appointmentTime.message}</span> : null}
           </label>
-          <label>
+          <label className={styles.label}>
             CAPTCHA ป้องกันสแปม (กรุณากรอก 1234)
-            <input type="text" inputMode="numeric" {...register('captcha')} aria-invalid={Boolean(errors.captcha)} />
-            {errors.captcha && <span className="error">{errors.captcha.message}</span>}
+            <input
+              className={styles.input}
+              type="text"
+              inputMode="numeric"
+              {...register('captcha')}
+              aria-invalid={Boolean(errors.captcha)}
+            />
+            {errors.captcha ? <span className={styles.error}>{errors.captcha.message}</span> : null}
           </label>
         </div>
-        <label className="consent-checkbox">
-          <input type="checkbox" {...register('consent')} />
+        <label className={`${styles.label} ${styles.consent}`}>
+          <input className={styles.consentInput} type="checkbox" {...register('consent')} />
           <span>
             ข้าพเจ้าตกลงให้โรงพยาบาลจัดเก็บและใช้ข้อมูลส่วนบุคคลตาม{' '}
             <a href="https://www.example-hospital.go.th/privacy" target="_blank" rel="noopener noreferrer">
@@ -173,75 +210,21 @@ export const AppointmentForm: React.FC = () => {
             </a>
           </span>
         </label>
-        {errors.consent && <span className="error">{errors.consent.message}</span>}
-        <button type="submit" className="submit-button">
+        {errors.consent ? <span className={styles.error}>{errors.consent.message}</span> : null}
+        <button type="submit" className={styles.submitButton}>
           {status === 'submitting' ? 'กำลังส่งข้อมูล...' : 'ยืนยันการนัดหมาย'}
         </button>
-        {submitError && <p className="error" role="alert">{submitError}</p>}
+        {submitError ? (
+          <p className={styles.error} role="alert">
+            {submitError}
+          </p>
+        ) : null}
         {status === 'success' && referenceCode && (
-          <p className="success" role="status">
+          <p className={styles.success} role="status">
             ส่งคำขอนัดหมายสำเร็จ! หมายเลขอ้างอิงของคุณคือ {referenceCode} เจ้าหน้าที่จะติดต่อกลับเพื่อยืนยันอีกครั้ง
           </p>
         )}
       </fieldset>
-      <style>{`
-        .appointment-form {
-          border-top: 4px solid var(--color-primary);
-        }
-        .appointment-form fieldset {
-          border: none;
-          padding: 0;
-          margin: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-        .form-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-          gap: 1rem;
-        }
-        label {
-          display: flex;
-          flex-direction: column;
-          gap: 0.35rem;
-          font-weight: 600;
-        }
-        input, select {
-          padding: 0.6rem 0.75rem;
-          border-radius: 8px;
-          border: 1px solid rgba(15, 23, 42, 0.2);
-          font-size: 1rem;
-        }
-        .consent-checkbox {
-          flex-direction: row;
-          align-items: flex-start;
-          gap: 0.75rem;
-          font-weight: 500;
-        }
-        .consent-checkbox input {
-          margin-top: 0.25rem;
-        }
-        .submit-button {
-          align-self: flex-start;
-          background: var(--color-secondary);
-          color: #fff;
-          border: none;
-          padding: 0.75rem 1.5rem;
-          border-radius: 999px;
-          font-size: 1rem;
-          font-weight: 700;
-          cursor: pointer;
-        }
-        .error {
-          color: #b91c1c;
-          font-size: 0.9rem;
-        }
-        .success {
-          color: #047857;
-          font-weight: 600;
-        }
-      `}</style>
     </form>
   )
 }

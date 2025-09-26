@@ -1,0 +1,63 @@
+@use 'sass:map';
+
+$colors: (
+  primary: #1d4ed8,
+  secondary: #0ea5e9,
+  accent: #22c55e,
+  neutral-900: #0f172a,
+  neutral-700: #334155,
+  neutral-500: #64748b,
+  neutral-200: #e2e8f0,
+  neutral-100: #f8fafc,
+  surface: #ffffff
+);
+
+$shadows: (
+  sm: 0 8px 24px -12px rgba(15, 23, 42, 0.22),
+  md: 0 24px 48px -24px rgba(15, 23, 42, 0.35)
+);
+
+$radii: (
+  sm: 12px,
+  md: 18px,
+  lg: 26px
+);
+
+$font-base: 16px;
+
+:root {
+  --font-scale: 1;
+  --font-base: #{$font-base};
+  --color-primary: #{map.get($colors, primary)};
+  --color-secondary: #{map.get($colors, secondary)};
+  --color-accent: #{map.get($colors, accent)};
+  --color-text: #{map.get($colors, neutral-900)};
+  --color-text-muted: #{map.get($colors, neutral-500)};
+  --color-surface: #{map.get($colors, surface)};
+  --color-surface-muted: rgba(255, 255, 255, 0.75);
+  --color-background: linear-gradient(
+      180deg,
+      rgba(56, 189, 248, 0.16) 0%,
+      transparent 42%
+    ),
+    #{map.get($colors, neutral-100)};
+  --color-border: rgba(148, 163, 184, 0.18);
+  --shadow-sm: #{map.get($shadows, sm)};
+  --shadow-md: #{map.get($shadows, md)};
+  --radius-sm: #{map.get($radii, sm)};
+  --radius-md: #{map.get($radii, md)};
+  --radius-lg: #{map.get($radii, lg)};
+  --gradient-primary: linear-gradient(135deg, #{map.get($colors, primary)} 0%, #38bdf8 40%, #{map.get($colors, accent)} 100%);
+}
+
+body.high-contrast {
+  --color-background: #020617;
+  --color-surface: #0f172a;
+  --color-surface-muted: rgba(15, 23, 42, 0.85);
+  --color-text: #f8fafc;
+  --color-text-muted: #cbd5f5;
+  --color-primary: #60a5fa;
+  --color-secondary: #38bdf8;
+  --color-accent: #22d3ee;
+  --color-border: rgba(148, 163, 184, 0.45);
+}

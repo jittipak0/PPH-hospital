@@ -1,4 +1,5 @@
 import React from 'react'
+import styles from './Grid.module.scss'
 
 interface GridProps {
   children: React.ReactNode
@@ -7,26 +8,17 @@ interface GridProps {
 }
 
 export const Grid: React.FC<GridProps> = ({ children, columns = 3, gap = '1.5rem' }) => {
+  const tabletColumns = Math.min(columns, 2)
+  const styleVars: React.CSSProperties = {
+    '--grid-gap': gap,
+    '--grid-columns': columns,
+    '--grid-columns-md': tabletColumns,
+    '--grid-columns-sm': 1
+  } as React.CSSProperties
+
   return (
-    <div className="grid-layout">
+    <div className={styles.gridLayout} style={styleVars}>
       {children}
-      <style>{`
-        .grid-layout {
-          display: grid;
-          gap: ${gap};
-          grid-template-columns: repeat(${columns}, minmax(0, 1fr));
-        }
-        @media (max-width: 1024px) {
-          .grid-layout {
-            grid-template-columns: repeat(${Math.min(columns, 2)}, minmax(0, 1fr));
-          }
-        }
-        @media (max-width: 640px) {
-          .grid-layout {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
     </div>
   )
 }

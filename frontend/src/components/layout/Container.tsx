@@ -1,4 +1,5 @@
 import React from 'react'
+import styles from './Container.module.scss'
 
 interface ContainerProps {
   children: React.ReactNode
@@ -7,15 +8,5 @@ interface ContainerProps {
 }
 
 export const Container: React.FC<ContainerProps> = ({ children, as: Component = 'div', className }) => {
-  return (
-    <Component className={`container-shell ${className ?? ''}`.trim()}>
-      {children}
-      <style>{`
-        .container-shell {
-          width: min(1120px, 92vw);
-          margin: 0 auto;
-        }
-      `}</style>
-    </Component>
-  )
+  return <Component className={`${styles.containerShell} ${className ?? ''}`.trim()}>{children}</Component>
 }

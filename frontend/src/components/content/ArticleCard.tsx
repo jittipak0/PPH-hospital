@@ -1,5 +1,6 @@
 import React from 'react'
 import type { Article } from '../../lib/api'
+import styles from './ArticleCard.module.scss'
 
 interface ArticleCardProps {
   article: Article
@@ -7,30 +8,20 @@ interface ArticleCardProps {
 
 export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   return (
-    <article className="card article-card">
-      <img src={`${article.imageUrl}?auto=format&fit=crop&w=600&q=80`} alt="ภาพประกอบบทความ" loading="lazy" />
-      <div className="article-card__body">
+    <article className={`card ${styles.articleCard}`}>
+      <img
+        className={styles.image}
+        src={`${article.imageUrl}?auto=format&fit=crop&w=600&q=80`}
+        alt="ภาพประกอบบทความ"
+        loading="lazy"
+      />
+      <div className={styles.body}>
         <h3>{article.title}</h3>
-        <p>{article.summary}</p>
+        <p className={styles.summary}>{article.summary}</p>
+        <button type="button" className="btn btn-secondary" aria-label={`อ่านบทความ ${article.title}`}>
+          อ่านบทความเต็ม
+        </button>
       </div>
-      <style>{`
-        .article-card {
-          overflow: hidden;
-          padding: 0;
-        }
-        .article-card img {
-          width: 100%;
-          height: 180px;
-          object-fit: cover;
-        }
-        .article-card__body {
-          padding: 1.25rem;
-        }
-        .article-card h3 {
-          margin-top: 0;
-          color: var(--color-primary);
-        }
-      `}</style>
     </article>
   )
 }
