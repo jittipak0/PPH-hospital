@@ -4,14 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Application\Forms\FormSubmissionService;
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
-use League\CommonMark\MarkdownConverter;
-use League\CommonMark\MarkdownConverterInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -52,12 +46,6 @@ class AppServiceProvider extends ServiceProvider
                 return $app->make($implementation, $parameters);
             });
         }
-
-        $this->app->singleton(FormSubmissionService::class, function ($app) {
-            return new FormSubmissionService((string) config('mail.notify_email'));
-        });
-
-        $this->app->singleton(MarkdownConverterInterface::class, fn () => new MarkdownConverter());
     }
 
     /**
@@ -65,8 +53,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        RateLimiter::for('public-forms', function (Request $request) {
-            return Limit::perMinute(20)->by($request->ip());
-        });
+        //
     }
 }

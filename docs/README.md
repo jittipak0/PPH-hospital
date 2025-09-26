@@ -1,87 +1,82 @@
-# PPH Hospital Portal – คู่มือภาพรวม
+﻿# Hospital Starter (v2)
 
-ชุดโค้ดนี้ประกอบด้วย **Laravel 11 (API)** และ **React 18 (Vite)** สำหรับพัฒนาเว็บไซต์โรงพยาบาลโพนพิสัย โดยรอบนี้เพิ่มหน้าเนื้อหาแบบ CMS, แบบฟอร์มบริการประชาชน/บุคลากร, ดีไซน์หน้าแรกใหม่ และเครื่องมือประกอบ เช่น sitemap generator และชุดเอกสารอัปเดต
+สตาร์ตเตอร์ชุดนี้รวบรวมหน้าบ้าน React, API ตัวอย่างของ Laravel และคอนฟิกสำหรับ Nginx/Supervisor ที่ใช้เป็นโครงตั้งต้นให้ทีมพัฒนาระบบโรงพยาบาล สามารถนำไปต่อยอดฟีเจอร์จริงได้อย่างรวดเร็ว
 
-## ฟีเจอร์สำคัญ
-- หน้าเนื้อหา (About, Programs, Legal ฯลฯ) แบ่งหมวดชัดเจน ข้อมูลเก็บในตาราง `pages` และดึงผ่าน `/api/pages/{slug}`
-- แบบฟอร์มสาธารณะ 3 รายการ: ขอเวชระเบียน, การรับบริจาค, ประเมินความพึงพอใจ (รองรับไฟล์แนบ + rate limit)
-- แบบฟอร์มบุคลากร 2 รายการ: เบิกค่าน้ำมัน, ขอเอกสารจากศูนย์จัดเก็บ (ต้องล็อกอินด้วย Sanctum)
-- ระบบแจ้งเตือนอีเมล (optional) ผ่าน `NOTIFY_EMAIL` + Mail queue
-- หน้า Home และ Online Services ปรับดีไซน์ใหม่ พร้อม Toast แจ้งผลการส่งฟอร์ม
-- สคริปต์ `npm run prebuild` สร้าง `public/sitemap.xml` จาก `src/pages.config.ts`
+## เทคโนโลยีและเครื่องมือหลัก
+- **Frontend:** React 18 + Vite (ESM) พร้อมตัวอย่างการเรียก API ผ่าน fetch
+- **Backend:** Laravel 11 (API only) + Sanctum (token abilities) พร้อมสคริปต์ล็อกอิน/จัดการข่าวสาร
+- **ฐานข้อมูล:** MySQL หรือ MariaDB
+- **เว็บเซิร์ฟเวอร์:** Nginx + PHP-FPM (ตัวอย่างไฟล์คอนฟิกในโฟลเดอร์ `nginx/`)
+- **CI/CD:** ตัวอย่าง workflow บน GitHub Actions (build frontend, scaffold PHPUnit สำหรับ backend)
+- **เอกสารเพิ่ม:** Postman collection, systemd unit และ runbook
 
-## การตั้งค่าเริ่มต้น
+## โครงสร้างโครงการ
+```
+frontend/            # โค้ด React (Vite) + ตัวอย่างหน้าข่าวประชาสัมพันธ์
+backend/src-snippets # ตัวอย่างไฟล์ Laravel: controller, request, migration, route, test
+nginx/               # ไฟล์ server block สำหรับ frontend+backend
+systemd/             # ตัวอย่าง service/timer สำหรับ queue worker + schedule
+postman/             # Postman collection/fragments ของ API
+docs/                # เอกสารประกอบ (Coding rules, ENV, DB, ROUTES, RUNBOOK, SECURITY)
+```
 
-### 1. Backend (Laravel)
+> โฟลเดอร์ `backend/` มีเพียงซอร์สตัวอย่าง (snippet) เพื่อคัดลอกไปวางในโปรเจ็กต์ Laravel ที่สร้างใหม่ ทีมยังต้องรัน `composer create-project` เพื่อเตรียมโครง Laravel จริงก่อนเริ่มงาน
+
+## ขั้นตอนเริ่มต้นอย่างรวดเร็ว
+
+### 1. เตรียม Backend Laravel
 ```bash
+composer create-project laravel/laravel:^11 backend
 cd backend
-cp .env.example .env
-composer install
+composer require laravel/sanctum
+php artisan vendor:publish --provider="Laravel\\Sanctum\\SanctumServiceProvider"
+cp -r ../backend/src-snippets/* .
+php artisan migrate
 php artisan key:generate
-php artisan migrate --seed
-php artisan storage:link   # เพื่อเปิด path /storage/uploads
-php artisan serve          # เริ่ม API ที่ http://127.0.0.1:8000
 ```
-- ตรวจสอบค่า `.env`
-  - `APP_URL` ให้ตรงกับ origin ของ API (ใช้ https ใน production)
-  - `FRONTEND_ORIGIN` กำหนดโดเมนที่ frontend ใช้เรียก API
-  - `FILE_MAX_MB`, `NOTIFY_EMAIL`, `SANCTUM_STATEFUL_DOMAINS` ตามสภาพแวดล้อม
-  - หากต้องการส่งอีเมล ให้ตั้งค่า `MAIL_MAILER`, `MAIL_HOST`, `MAIL_USERNAME`, `MAIL_PASSWORD`
-- ตารางและ seeder ใหม่จะถูกสร้างเมื่อรัน `php artisan migrate --seed`
-- ต้องเปิด queue worker (`php artisan queue:work`) หากเปิดการส่งอีเมลแบบ queue
+- สร้างผู้ใช้ตัวอย่างก่อนทดสอบ (เช่น seeder หรือคำสั่ง `php artisan tinker`) พร้อมกำหนด `role` เป็น `admin` หรือ `staff`
+- เพิ่ม `SANCTUM_STATEFUL_DOMAINS` ให้ตรงกับโดเมนที่ frontend เรียกใช้งาน
 
-### 2. Frontend (React)
+### 2. เตรียม Frontend React
 ```bash
-cd frontend
-cp .env.example .env    # ระบุ VITE_API_BASE_URL หาก backend ไม่ได้รันบน origin เดียวกัน
-npm install
-npm run dev             # เริ่ม development server ที่ http://localhost:5173
+cd ../frontend
+cp .env.example .env        # ระบุ VITE_API_BASE_URL ให้ชี้ไปยัง backend
+npm install                 # หรือ pnpm install
+npm run dev                 # พัฒนาบน http://localhost:5173
 ```
-- คำสั่ง `npm run build` จะเรียก `npm run prebuild` เพื่อสร้าง `public/sitemap.xml`
-- หากต้องการปรับค่าพื้นฐานของ sitemap ให้ตั้ง `SITEMAP_BASE_URL` ก่อนรัน build
+- สำหรับ build โปรดใช้ `npm run build` แล้วนำไฟล์ใน `dist/` ไปเสิร์ฟผ่าน Nginx (ดูตัวอย่างที่ `nginx/frontend.conf`)
 
-## การแก้ไขหน้าเนื้อหา (Pages)
-- หน้า CMS ทั้งหมด seed จาก `database/seeders/PageSeeder.php`
-- สามารถแก้เนื้อหาได้สองวิธี
-  1. แก้ไข Markdown ใน seeder แล้วรัน `php artisan db:seed --class=PageSeeder`
-  2. แก้ข้อมูลโดยตรงในตาราง `pages` (แนะนำใช้ Admin tool) แล้วตั้ง `status=published`
-- Frontend จะ fetch HTML ผ่าน `/api/pages/{slug}` และ sanitize ด้วย DOMPurify
-- ถ้าต้องสร้างหมวดใหม่ให้เพิ่ม entry ที่ `frontend/src/pages.config.ts` พร้อม slug/route
+### 3. ทดสอบการเชื่อมต่อ
+- เรียก `GET /api/health` จาก backend ควรได้ `{ "ok": true }`
+- เปิดหน้า frontend แล้วตรวจสอบว่าแสดงรายการข่าวจาก API (`GET /api/news`)
+- สร้างข่าวใหม่ผ่าน Postman หรือสคริปต์ `createNews` และตรวจสอบว่า endpoint ของ staff ตรวจสอบสิทธิ์ถูกต้อง
 
-## แบบฟอร์มและการทดสอบ
-| ฟอร์ม | เส้นทางบนเว็บ | API | หมายเหตุ |
-| --- | --- | --- | --- |
-| ขอเวชระเบียน | `/forms/medical-record-request` | `POST /api/forms/medical-records` | รองรับแนบไฟล์ 5 ชิ้น (PDF/JPG/PNG) |
-| การรับบริจาค | `/donation` | `POST /api/forms/donations` | ต้องระบุช่องทางบริจาคและจำนวนเงิน |
-| ประเมินความพึงพอใจ | `/feedback/satisfaction` | `POST /api/forms/satisfaction` | คะแนน 1–5 + opt-in สำหรับติดต่อกลับ |
-| เบิกค่าน้ำมัน (staff) | `/internal/fuel-claims` | `POST /api/forms/fuel-claims` | ต้องล็อกอิน Sanctum + แนบใบเสร็จได้ |
-| ขอเอกสาร (staff) | `/internal/archive-center` | `POST /api/forms/archive-requests` | ต้องล็อกอิน Sanctum |
+## คำสั่งที่ใช้บ่อย
+- Backend: `php artisan serve`, `php artisan migrate`, `php artisan test`
+- Frontend: `npm run lint`, `npm run test` (โปรดตั้งค่า ESLint/Vitest เพิ่มเติมตามเอกสาร)
+- Docker/Deployment: ใช้ไฟล์ตัวอย่างใน `nginx/` และ `systemd/` เป็นฐานประกอบระบบจริง
 
-การทดสอบฝั่ง backend สามารถใช้ Postman หรือ curl ตัวอย่างใน `docs/ROUTES.md` ตรวจสอบสถานะ 201/422/401/429 ตามกรณี ตัวอย่าง flow สาธารณะ:
-1. `GET /sanctum/csrf-cookie`
-2. `POST /api/forms/medical-records` พร้อม header `X-XSRF-TOKEN`
+## การติดตั้งเครื่องมือเสริม (แนะนำ)
+- เปิดใช้ Laravel Pint (`composer require laravel/pint --dev`) สำหรับจัดรูปแบบโค้ด
+- ติดตั้ง ESLint + Prettier (`npm install -D eslint prettier eslint-plugin-react`) และคัดลอกคอนฟิกจาก `docs/CODING_RULES.md`
+- ตั้งค่า Git hooks ผ่าน Husky เพื่อตรวจสอบ lint/test ก่อน commit
 
-## การสลับฐานข้อมูล dev / prod
-- ค่าเริ่มต้นใน `.env.example` ใช้ `DB_CONNECTION=sqlite` สำหรับ local dev
-- เมื่อย้ายสภาพแวดล้อมให้ตั้งค่า MySQL/MariaDB ตาม `docs/DB.md` (อย่าลืมเปลี่ยน `DATASTORE_CONNECTION`)
-- production ควรรัน `php artisan migrate --force` บน maintenance window และสำรองฐานข้อมูลก่อนทุกครั้ง
+## แนวทางสภาพแวดล้อมพัฒนาและดีพลอย
 
-## การดีพลอย / CI
-- Workflow เดิม (GitHub Actions) สร้าง build ของ frontend และเตรียม PHPUnit scaffolding สำหรับ backend ยังใช้งานได้
-- ก่อน deploy ให้รัน
-  - `composer install --no-dev && php artisan migrate --force`
-  - `npm ci && npm run build`
-- ตรวจสอบให้แน่ใจว่าได้ตั้งค่า `FRONTEND_ORIGIN`, `SANCTUM_STATEFUL_DOMAINS`, `NOTIFY_EMAIL`, `FILE_MAX_MB` ใน `.env` ของเซิร์ฟเวอร์จริง
+### พัฒนาใน Windows ด้วย WSL
+- ติดตั้ง WSL แล้ว `git clone` รีโปลงใน Linux filesystem (เช่น `~/projects/PPH-hospital`) เพื่อหลีกเลี่ยงปัญหา permission/ประสิทธิภาพจากการทำงานบนไดรฟ์ Windows หรือ `/var/www`
+- รันคำสั่งทั้งหมดของ Composer, npm และ Artisan ภายใน WSL เท่านั้น รวมถึงการสร้างโปรเจ็กต์ Laravel จริงด้วย `composer create-project`, การติดตั้ง Sanctum และการคัดลอกไฟล์จาก `backend/src-snippets`
+- ตั้งค่า MySQL/MariaDB สำหรับการพัฒนา (จะรันภายใน WSL หรือใช้ฐานข้อมูลภายนอกก็ได้) แล้วรัน `php artisan migrate`/`php artisan db:seed` ตามต้องการ
+- คัดลอก `.env.example` ไปเป็น `.env` ทั้งฝั่ง backend และ frontend พร้อมกรอกค่า `APP_KEY`, `DB_*`, `SANCTUM_STATEFUL_DOMAINS`, `VITE_API_BASE_URL` เป็นต้น โดยอ้างอิงรายละเอียดจาก `docs/ENV.md`
+- ใช้สคริปต์มาตรฐานเช่น `php artisan serve`, `php artisan test`, `npm run dev` เพื่อทดสอบก่อนส่งงาน และตรวจสอบ `GET /api/health`/หน้าเว็บว่าเชื่อมต่อกันได้
 
-## ตรวจสอบหลัง deploy
-1. `GET /api/health` ต้องได้ `{ "ok": true }`
-2. `GET /api/pages/vision-mission-values` ตอบ 200 พร้อม HTML
-3. ส่งคำขอ `/api/forms/medical-records` (ตัวอย่าง) แล้วได้ 201 + log ใน `storage/logs/laravel.log`
-4. เรียก `/internal/fuel-claims` โดยไม่ล็อกอิน → 401
-5. ดูหน้า `/sitemap` และไฟล์ `public/sitemap.xml` ควรมีเส้นทางครบทุกหมวด
+### เตรียมเซิร์ฟเวอร์ Linux 9 สำหรับดีพลอย
+- ติดตั้ง Git, PHP-FPM 8.x, Composer และส่วนขยาย Laravel ที่จำเป็น จากนั้น `git pull` โค้ด production, รัน `composer install --no-dev`, อัปเดต `.env`, แล้วสั่ง `php artisan migrate --force` พร้อมคำสั่ง cache (`config:cache`, `route:cache`, `queue:restart`)
+- ฝั่ง frontend ให้รัน `npm ci` และ `npm run build` แล้วนำไฟล์ใน `dist/` ไปเสิร์ฟผ่าน Nginx โดยใช้ไฟล์ตัวอย่างใน `nginx/` เป็นแม่แบบ (ตั้งค่า proxy `/api` ไป backend)
+- เปิดใช้ systemd service/timer ตามไฟล์ใน `systemd/` สำหรับ queue worker (`queue:work`) และ scheduler (`schedule:run`) เพื่อให้ artisan ทำงานอัตโนมัติ
+- หลังดีพลอยตรวจสอบ `GET /api/health`, ดูสถานะบริการ (`systemctl status nginx php-fpm`), และทำตามขั้นตอน post-deploy/checklist ใน `docs/RUNBOOK.md`
 
-## อ้างอิงเพิ่มเติม
-- `docs/ROUTES.md` – รายละเอียด endpoint และตัวอย่าง curl
-- `docs/DB.md` – สคีมา + แนวทาง migration
-- `docs/ENV.md` – รายการ environment variables
-- `docs/SECURITY.md` – แนวทาง PDPA, rate limit, upload safety
+## การสนับสนุนและการปรับแก้
+- อัปเดตเอกสารทุกครั้งเมื่อเพิ่ม endpoint, environment variable หรือขั้นตอน deployment ใหม่
+- ใช้ `docs/CODING_RULES.md` เป็นมาตรฐานกลางสำหรับโค้ดทั้งระบบ
+- หากพบปัญหา โปรดดูคู่มือ `docs/RUNBOOK.md` และ `docs/SECURITY.md` ก่อน escalated ไปยังทีมโครงสร้างพื้นฐาน
