@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Container } from '../components/layout/Container'
 import { PageSection } from '../components/layout/PageSection'
@@ -8,14 +8,6 @@ import { ArticleCard } from '../components/content/ArticleCard'
 import { DownloadWebViewButton } from '../components/common/DownloadWebViewButton'
 import { api, type Article, type Clinic, type NewsItem } from '../lib/api'
 import type { BeforeInstallPromptEvent } from '../types/pwa'
-import { siteSections, importantQuickLinks } from '../config/siteMap'
-import { PageMeta } from '../components/common/PageMeta'
-
-const stats = [
-  { label: 'ผู้ป่วยนอกต่อปี', value: '420,000+' },
-  { label: 'ความพึงพอใจเฉลี่ย', value: '94%' },
-  { label: 'โครงการดูแลชุมชน', value: '36 โครงการ' }
-]
 
 export const Home: React.FC = () => {
   const [news, setNews] = useState<NewsItem[]>([])
@@ -27,7 +19,6 @@ export const Home: React.FC = () => {
   const [showGuide, setShowGuide] = useState<'ios' | 'android' | null>(null)
   const [platform, setPlatform] = useState<'ios' | 'android' | 'other'>('other')
   const [isStandalone, setIsStandalone] = useState(false)
-  const [showNotice, setShowNotice] = useState(true)
 
   useEffect(() => {
     let cancelled = false
@@ -131,14 +122,11 @@ export const Home: React.FC = () => {
     setShowGuide('ios')
   }
 
-  const quickStartLinks = useMemo(
-    () => [
-      { title: 'นัดหมายแพทย์ออนไลน์', description: 'จองคิวล่วงหน้ากับแพทย์ผู้เชี่ยวชาญ', to: '/appointment' },
-      { title: 'ขอประวัติการรักษา', description: 'ยื่นคำขอเอกสารสำคัญเพื่อใช้ต่อยอดการรักษา', to: '/forms/medical-record-request' },
-      { title: 'Health Rider', description: 'รับยาและคำแนะนำถึงบ้านสำหรับผู้ป่วยเรื้อรัง', to: '/programs/health-rider' }
-    ],
-    []
-  )
+  const closeGuide = () => {
+    setShowGuide(null)
+  }
+
+  const showAndroidHint = platform === 'android' && !isStandalone && deferredPrompt === null
 
   const iosInstructions = [
     'เปิดเว็บไซต์ด้วย Safari เพื่อให้สามารถเพิ่มลงหน้าจอหลักได้',
@@ -154,148 +142,33 @@ export const Home: React.FC = () => {
     'ยืนยันโดยแตะ Add แอปจะถูกติดตั้งเป็น WebView'
   ]
 
-  const showAndroidHint = platform === 'android' && !isStandalone && deferredPrompt === null
-
   return (
     <div className="home-page">
-      <PageMeta
-        title="โรงพยาบาลโพนพิสัย – การดูแลคุณภาพด้วยหัวใจและเทคโนโลยี"
-        description="โรงพยาบาลโพนพิสัยให้บริการรักษาพยาบาลครบวงจร พร้อมบริการออนไลน์ โครงการ Health Rider และการดูแลเชิงรุกเพื่อชุมชน"
-        url="https://www.pph-hospital.local/"
-      />
-      {showNotice ? (
-        <div className="home-notice" role="alert">
-          <Container className="home-notice__inner">
-            <p>
-              ประชาชนสามารถรับบริการวัคซีนไข้หวัดใหญ่ฟรีสำหรับกลุ่มเสี่ยง ตั้งแต่วันนี้ถึง 30 กันยายน 2567 ที่คลินิกเวชปฏิบัติทั่วไป ชั้น 2
-            </p>
-            <button type="button" onClick={() => setShowNotice(false)} aria-label="ปิดประกาศ" className="home-notice__close">
-              ×
-            </button>
-          </Container>
-        </div>
-      ) : null}
-
       <section className="hero">
-        <Container className="hero__inner">
+        <Container>
           <div className="hero__content">
-            <h1>ดูแลด้วยหัวใจ เชื่อมโยงด้วยเทคโนโลยี</h1>
+            <h1>โรงพยาบาลโพนพิสัย ยืนหยัดเพื่อการดูแลสุขภาพของทุกคน</h1>
             <p>
-              โรงพยาบาลโพนพิสัยพร้อมดูแลสุขภาพของทุกคนด้วยทีมแพทย์สหสาขา โครงการเชิงรุก และบริการออนไลน์ที่เข้าถึงง่าย
+              เราให้บริการการรักษาครบวงจร ทีมแพทย์ผู้เชี่ยวชาญ และเทคโนโลยีทันสมัย เพื่อให้คนไทยทุกวัยได้รับการดูแลที่ดีที่สุด
             </p>
             <div className="hero__actions">
-              <Link to="/appointment" className="btn btn-primary">
-                นัดหมายแพทย์
+              <Link to="/appointment" className="btn btn-primary" aria-label="จองคิวแพทย์ออนไลน์">
+                จองคิวแพทย์ออนไลน์
               </Link>
-              <Link to="/services/online" className="btn btn-secondary">
-                บริการออนไลน์
+              <Link to="/news" className="btn btn-secondary" aria-label="อ่านข่าวสารโรงพยาบาล">
+                ข่าวสารล่าสุด
               </Link>
+              <DownloadWebViewButton className="hero-download-button" />
             </div>
           </div>
           <div className="hero__figure" aria-hidden="true">
             <img
-              src="https://images.unsplash.com/photo-1580281657521-6c3fd1e72054?auto=format&fit=crop&w=900&q=80"
-              alt="ทีมแพทย์กำลังให้คำปรึกษา"
+              src="https://images.unsplash.com/photo-1580281657521-6c3fd1e72054?auto=format&fit=crop&w=800&q=80"
+              alt="ทีมแพทย์"
             />
           </div>
         </Container>
       </section>
-
-      <PageSection id="categories" title="หมวดหมู่สำคัญ">
-        <Grid columns={3}>
-          {siteSections.slice(0, 6).map((section) => (
-            <article className="card category-card" key={section.id}>
-              <h3>{section.label}</h3>
-              <p>{section.description}</p>
-              <Link className="btn btn-outline" to={section.path}>
-                เข้าสู่หมวดนี้
-              </Link>
-            </article>
-          ))}
-        </Grid>
-      </PageSection>
-
-      <PageSection id="quick-links" title="ลัดสู่บริการยอดนิยม" background="muted">
-        <Grid columns={3}>
-          {importantQuickLinks.map((link) => (
-            <article className="card quick-link" key={link.path}>
-              <h3>{link.label}</h3>
-              <p>{link.description ?? 'เริ่มใช้งานบริการดิจิทัลของโรงพยาบาลได้ภายในไม่กี่ขั้นตอน'}</p>
-              <Link className="btn btn-primary" to={link.path}>
-                {link.ctaLabel ?? 'เปิดบริการ'}
-              </Link>
-            </article>
-          ))}
-        </Grid>
-      </PageSection>
-
-      <PageSection id="news" title="ข่าวและประกาศล่าสุด">
-        <Grid columns={2}>
-          <div>
-            <NewsList news={news} onSelect={setSelectedNews} selected={selectedNews?.id ?? null} />
-          </div>
-          <div>
-            {selectedNews ? (
-              <article className="card news-detail">
-                <h3>{selectedNews.title}</h3>
-                <p>{selectedNews.summary}</p>
-                <Link to="/news" className="btn btn-outline">
-                  อ่านทั้งหมด
-                </Link>
-              </article>
-            ) : (
-              <p>เลือกข่าวจากรายการเพื่ออ่านรายละเอียด</p>
-            )}
-          </div>
-        </Grid>
-      </PageSection>
-
-      <PageSection id="stats" title="ตัวเลขที่คุณเชื่อมั่น" background="muted">
-        <Grid columns={3}>
-          {stats.map((item) => (
-            <article className="card stat-card" key={item.label}>
-              <strong>{item.value}</strong>
-              <span>{item.label}</span>
-            </article>
-          ))}
-        </Grid>
-      </PageSection>
-
-      <PageSection id="quick-start" title="เริ่มต้นใช้งานเร็ว" description="บริการยอดนิยมที่พร้อมดูแลคุณทันที">
-        <Grid columns={3}>
-          {quickStartLinks.map((item) => (
-            <article className="card quick-start" key={item.title}>
-              <h3>{item.title}</h3>
-              <p>{item.description}</p>
-              <Link className="btn btn-outline" to={item.to}>
-                ไปยังบริการ
-              </Link>
-            </article>
-          ))}
-        </Grid>
-      </PageSection>
-
-      <PageSection id="clinics" title="คลินิกเฉพาะทาง" description="บริการสำหรับผู้ป่วยเฉพาะทางที่เปิดให้บริการทุกสัปดาห์">
-        <Grid columns={clinics.length > 0 ? Math.min(clinics.length, 3) : 3}>
-          {clinics.map((clinic) => (
-            <article key={clinic.id} className="card">
-              <h3>{clinic.name}</h3>
-              <p>{clinic.description}</p>
-              <p>
-                <strong>เวลาทำการ:</strong> {clinic.operatingHours}
-              </p>
-            </article>
-          ))}
-        </Grid>
-      </PageSection>
-
-      <PageSection id="articles" title="บทความแนะนำ" background="muted">
-        <Grid columns={articles.length > 0 ? Math.min(articles.length, 3) : 2}>
-          {articles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
-          ))}
-        </Grid>
-      </PageSection>
 
       <PageSection
         id="download"
@@ -327,157 +200,263 @@ export const Home: React.FC = () => {
           </article>
           <article className="card download-card">
             <h3>iOS</h3>
-            <p>เพิ่มเว็บไซต์ลงหน้าจอโฮมเพื่อเข้าถึงบริการได้รวดเร็ว พร้อมแจ้งเตือนจาก Notification</p>
+            <p>เพิ่มเว็บแอปลงหน้าจอหลักผ่าน Safari เพื่อใช้งานเหมือนแอปพลิเคชัน</p>
             <button type="button" className="btn btn-secondary" onClick={handleIosInstall}>
-              ดูขั้นตอนบน iOS
+              ดูขั้นตอนสำหรับ iOS
             </button>
-          </article>
-          <article className="card download-card">
-            <h3>ติดตั้งผ่านไฟล์</h3>
-            <p>สำหรับบุคลากรที่ใช้อุปกรณ์ Android ขององค์กร สามารถดาวน์โหลด WebView ที่ตั้งค่าไว้แล้ว</p>
-            <DownloadWebViewButton className="btn btn-outline" />
+            {platform === 'ios' && !isStandalone && (
+              <p className="download-card__hint">
+                ใช้ Safari เพื่อเพิ่มแอปลงหน้าจอหลักและใช้งานแบบเต็มหน้าจอ
+              </p>
+            )}
+            {isStandalone && platform === 'ios' && (
+              <p className="download-card__status" role="status">
+                คุณกำลังใช้งานในโหมดติดตั้งแล้ว ขอบคุณค่ะ
+              </p>
+            )}
           </article>
         </div>
-        {showGuide ? (
-          <div className="guide" role="dialog" aria-modal="true">
-            <div className="guide__content">
-              <h3>ขั้นตอนสำหรับ {showGuide === 'ios' ? 'iOS' : 'Android'}</h3>
-              <ol>
-                {(showGuide === 'ios' ? iosInstructions : androidInstructions).map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
-              <button type="button" className="btn btn-secondary" onClick={() => setShowGuide(null)}>
-                ปิดหน้าต่าง
-              </button>
+      </PageSection>
+
+      <PageSection id="quick-actions" title="บริการยอดนิยม" description="เข้าถึงบริการสำคัญของโรงพยาบาลได้ง่ายในคลิกเดียว">
+        <Grid columns={3}>
+          <article className="card quick-card">
+            <h3>นัดหมายแพทย์ออนไลน์</h3>
+            <p>นัดหมายแพทย์ล่วงหน้า ลดเวลารอคิว พร้อมระบบแจ้งเตือนอัตโนมัติ</p>
+            <Link to="/appointment" className="btn btn-primary" aria-label="เปิดหน้าฟอร์มนัดหมายแพทย์">
+              เริ่มนัดหมาย
+            </Link>
+          </article>
+          <article className="card quick-card">
+            <h3>ค้นหาแพทย์และตารางออกตรวจ</h3>
+            <p>ค้นหาชื่อแพทย์หรือเลือกตามแผนก พร้อมข้อมูลตารางออกตรวจในและนอกเวลาราชการ</p>
+            <Link to="/doctors" className="btn btn-primary" aria-label="เปิดหน้าค้นหาแพทย์">
+              ค้นหาแพทย์
+            </Link>
+          </article>
+          <article className="card quick-card">
+            <h3>ข้อมูลบริการผู้ป่วย</h3>
+            <p>ดูขั้นตอนการเข้ารับบริการ โปรแกรมตรวจสุขภาพ และสิทธิการรักษาที่รองรับ</p>
+            <Link to="/services" className="btn btn-primary" aria-label="เปิดหน้าบริการผู้ป่วย">
+              อ่านรายละเอียด
+            </Link>
+          </article>
+        </Grid>
+      </PageSection>
+
+      <PageSection id="news" title="ข่าวประชาสัมพันธ์" description="ประกาศสำคัญและกิจกรรมล่าสุดของโรงพยาบาล">
+        <NewsList news={news} onSelect={setSelectedNews} />
+        {selectedNews && (
+          <div className="news-detail" role="dialog" aria-label="รายละเอียดข่าว" aria-modal="false">
+            <h3>{selectedNews.title}</h3>
+            <p>{selectedNews.content}</p>
+            <button type="button" onClick={() => setSelectedNews(null)} className="btn btn-secondary">
+              ปิดหน้าต่าง
+            </button>
+          </div>
+        )}
+      </PageSection>
+
+      <PageSection id="clinics" title="คลินิกเฉพาะทาง" description="คลินิกที่ให้บริการด้วยทีมแพทย์ผู้เชี่ยวชาญ">
+        <Grid columns={clinics.length > 0 ? clinics.length : 3}>
+          {clinics.map((clinic) => (
+            <article className="card clinic-card" key={clinic.id}>
+              <h3>{clinic.name}</h3>
+              <p>{clinic.description}</p>
+              <p><strong>เวลาทำการ:</strong> {clinic.operatingHours}</p>
+            </article>
+          ))}
+        </Grid>
+      </PageSection>
+
+      <PageSection id="articles" title="บทความสุขภาพ" description="สาระความรู้เพื่อการดูแลสุขภาพสำหรับประชาชน">
+        <Grid columns={articles.length > 0 ? Math.min(articles.length, 3) : 3}>
+          {articles.map((article) => (
+            <ArticleCard key={article.id} article={article} />
+          ))}
+        </Grid>
+      </PageSection>
+
+      <section className="map-section" aria-labelledby="map-heading">
+        <Container>
+          <div className="map-section__grid">
+            <div>
+              <h2 id="map-heading">การเดินทางมายังโรงพยาบาล</h2>
+              <p>ที่ตั้ง: 123 ถนนสุขภาพดี แขวงประชาธิปไตย เขตเมืองหลวง กรุงเทพมหานคร 10200</p>
+              <ul>
+                <li>
+                  <strong>รถยนต์ส่วนตัว:</strong> สามารถจอดได้ที่อาคารจอดรถฝั่งทิศเหนือ มีทางเชื่อมเข้าตึกผู้ป่วยนอกโดยตรง
+                </li>
+                <li>
+                  <strong>ขนส่งสาธารณะ:</strong> ลงรถไฟฟ้าสายสีเขียวสถานีสุขภาพ ออกทางออก 2 ต่อรถเมล์สาย 15 หรือรถสองแถวสีเขียว
+                </li>
+              </ul>
+              <a href="https://www.example-hospital.go.th/files/hospital-map.pdf" className="btn btn-secondary">
+                ดาวน์โหลดแผนที่ภายในโรงพยาบาล (PDF)
+              </a>
+            </div>
+            <div className="map-section__frame">
+              <iframe
+                title="แผนที่โรงพยาบาลโพนพิสัย"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3875.792975200286!2d100.493088375097!3d13.745570897166702!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30e298d02c5d4b53%3A0xdbc3cfc9ad1bc105!2sMinistry%20of%20Public%20Health!5e0!3m2!1sth!2sth!4v1717470000000!5m2!1sth!2sth"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
             </div>
           </div>
-        ) : null}
-      </PageSection>
+        </Container>
+      </section>
+      {showGuide && (
+        <div className="install-guide" role="dialog" aria-modal="true" aria-labelledby="install-guide-title">
+          <div className="install-guide__content">
+            <h3 id="install-guide-title">
+              {showGuide === 'ios' ? 'ขั้นตอนติดตั้งบน iOS' : 'ขั้นตอนติดตั้งบน Android'}
+            </h3>
+            <ol>
+              {(showGuide === 'ios' ? iosInstructions : androidInstructions).map((step, index) => (
+                <li key={index}>{step}</li>
+              ))}
+            </ol>
+            <button type="button" className="btn btn-secondary" onClick={closeGuide}>
+              ปิดคู่มือ
+            </button>
+          </div>
+        </div>
+      )}
       <style>{`
-        .home-notice {
-          background: #fde68a;
-          color: #92400e;
-        }
-        .home-notice__inner {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 1rem;
-          padding: 0.75rem 0;
-        }
-        .home-notice__close {
-          background: transparent;
-          border: none;
-          font-size: 1.5rem;
-          cursor: pointer;
-          color: inherit;
-        }
         .hero {
-          background: linear-gradient(135deg, rgba(13, 110, 253, 0.15), rgba(59, 130, 246, 0.05));
-          padding: 4rem 0;
+          background: linear-gradient(135deg, rgba(13, 110, 253, 0.15), rgba(32, 201, 151, 0.15));
+          padding: 3rem 0;
         }
-        .hero__inner {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 2.5rem;
-          align-items: center;
+        .hero__content {
+          max-width: 560px;
         }
         .hero__content h1 {
-          font-size: clamp(2.2rem, 4vw, 2.8rem);
+          font-size: clamp(2rem, 4vw, 2.6rem);
           margin-bottom: 1rem;
         }
         .hero__content p {
           font-size: 1.1rem;
-          color: var(--color-muted);
         }
         .hero__actions {
-          margin-top: 1.75rem;
+          margin-top: 1.5rem;
           display: flex;
           gap: 1rem;
           flex-wrap: wrap;
         }
+        .hero-download-button {
+          padding: 0.75rem 1.5rem;
+        }
         .hero__figure img {
-          width: 100%;
           border-radius: 24px;
-          object-fit: cover;
-          box-shadow: var(--shadow-lg);
+          width: min(380px, 100%);
+          box-shadow: var(--shadow-sm);
         }
-        .category-card,
-        .quick-link,
-        .quick-start,
-        .stat-card {
-          min-height: 200px;
-        }
-        .stat-card {
+        .hero .container-shell {
           display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 0.25rem;
-        }
-        .stat-card strong {
-          font-size: 2rem;
-          color: var(--color-primary);
-        }
-        .stat-card span {
-          color: var(--color-muted);
-        }
-        .news-detail {
-          min-height: 260px;
+          align-items: center;
+          justify-content: space-between;
+          gap: 2rem;
         }
         .download-section {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
           gap: 1.5rem;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         }
         .download-card {
           display: flex;
           flex-direction: column;
-          gap: 0.75rem;
-        }
-        .download-card__status {
-          color: #047857;
-          font-weight: 600;
-        }
-        .download-card__hint {
-          color: var(--color-muted);
-          font-size: 0.9rem;
-        }
-        .guide {
-          position: fixed;
-          inset: 0;
-          background: rgba(15, 23, 42, 0.55);
-          display: grid;
-          place-items: center;
-          padding: 1.5rem;
-        }
-        .guide__content {
-          background: #fff;
-          border-radius: 16px;
-          padding: 2rem;
-          max-width: 420px;
-          width: 100%;
-          display: grid;
           gap: 1rem;
         }
-        .guide__content ol {
+        .download-card__status {
           margin: 0;
-          padding-left: 1.25rem;
-          display: grid;
-          gap: 0.5rem;
+          font-weight: 600;
+          color: var(--color-primary);
         }
-        @media (max-width: 768px) {
-          .hero {
-            padding: 3rem 0;
-          }
-          .hero__actions {
+        .download-card__hint {
+          margin: 0;
+          color: #495057;
+        }
+        .btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0.75rem 1.5rem;
+          border-radius: 999px;
+          font-weight: 700;
+          text-decoration: none;
+        }
+        .btn-primary {
+          background: var(--color-primary);
+          color: #fff;
+        }
+        .btn-secondary {
+          background: rgba(13, 110, 253, 0.12);
+          color: var(--color-primary);
+        }
+        .quick-card h3 {
+          margin-top: 0;
+        }
+        .news-detail {
+          margin-top: 1.5rem;
+          padding: 1.5rem;
+          border-radius: var(--radius-md);
+          background: rgba(32, 201, 151, 0.12);
+        }
+        .clinic-card h3 {
+          color: var(--color-primary);
+        }
+        .map-section {
+          background: rgba(32, 201, 151, 0.12);
+          padding: 3rem 0;
+        }
+        .map-section__grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 2rem;
+          align-items: center;
+        }
+        .map-section__frame iframe {
+          width: 100%;
+          min-height: 320px;
+          border: 0;
+          border-radius: var(--radius-md);
+          box-shadow: var(--shadow-sm);
+        }
+        .install-guide {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1.5rem;
+          z-index: 1000;
+        }
+        .install-guide__content {
+          background: #fff;
+          border-radius: var(--radius-md);
+          max-width: min(460px, 100%);
+          width: 100%;
+          padding: 2rem;
+          box-shadow: var(--shadow-md);
+        }
+        .install-guide__content ol {
+          padding-left: 1.25rem;
+        }
+        .install-guide__content li + li {
+          margin-top: 0.5rem;
+        }
+        @media (max-width: 960px) {
+          .hero .container-shell {
             flex-direction: column;
-            align-items: stretch;
+          }
+          .hero__figure img {
+            width: 100%;
           }
         }
       `}</style>
     </div>
   )
 }
-
-export default Home

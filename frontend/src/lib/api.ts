@@ -38,41 +38,6 @@ export type Article = {
   imageUrl: string
 }
 
-export type MedicalRecordRequestPayload = {
-  fullName: string
-  hn: string
-  citizenId: string
-  phone: string
-  email: string
-  address: string
-  reason: string
-  consent: boolean
-  idcardFile: File
-}
-
-export type DonationFormPayload = {
-  donorName: string
-  amount: number
-  channel: 'cash' | 'bank_transfer' | 'online'
-  phone?: string
-  email?: string
-  wantsReceipt: boolean
-  consent: boolean
-  notes?: string
-}
-
-export type SatisfactionSurveyPayload = {
-  fullName: string
-  hn?: string
-  serviceDate: string
-  serviceType: 'outpatient' | 'inpatient' | 'emergency' | 'telemedicine'
-  rating: number
-  feedback?: string
-  phone?: string
-  email?: string
-  consent: boolean
-}
-
 export type HealthPackage = {
   id: string
   name: string
@@ -229,22 +194,6 @@ const packages: HealthPackage[] = [
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
-
-const handleResponse = async <T>(response: Response): Promise<T> => {
-  if (response.status === 204) {
-    return {} as T
-  }
-  const data = await response.json().catch(() => ({}))
-  if (!response.ok) {
-    const message = (data as { message?: string; error?: { message?: string } }).message ??
-      (data as { error?: { message?: string } }).error?.message ??
-      'ไม่สามารถเชื่อมต่อระบบได้'
-    throw new Error(message)
-  }
-  return data as T
-}
-
 export const api = {
   async fetchClinics(): Promise<Clinic[]> {
     await delay(100)
@@ -277,62 +226,6 @@ export const api = {
     await delay(250)
     const sanitizedMessage = payload.message.replace(/</g, '&lt;').replace(/>/g, '&gt;')
     console.info('Contact message submitted', { ...payload, message: sanitizedMessage })
-  },
-  async submitMedicalRecordRequest(payload: MedicalRecordRequestPayload): Promise<{ data: { id: number } }> {
-    const formData = new FormData()
-    formData.append('full_name', payload.fullName)
-    formData.append('hn', payload.hn)
-    formData.append('citizen_id', payload.citizenId)
-    formData.append('phone', payload.phone)
-    formData.append('email', payload.email)
-    formData.append('address', payload.address)
-    formData.append('reason', payload.reason)
-    formData.append('consent', payload.consent ? '1' : '0')
-    formData.append('idcard_file', payload.idcardFile)
-
-    const response = await fetch(`${API_BASE_URL}/api/forms/medical-record-request`, {
-      method: 'POST',
-      body: formData
-    })
-
-    return handleResponse<{ data: { id: number } }>(response)
-  },
-  async submitDonation(payload: DonationFormPayload): Promise<{ data: { id: number } }> {
-    const response = await fetch(`${API_BASE_URL}/api/forms/donation`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        donor_name: payload.donorName,
-        amount: payload.amount,
-        channel: payload.channel,
-        phone: payload.phone ?? null,
-        email: payload.email ?? null,
-        wants_receipt: payload.wantsReceipt,
-        consent: payload.consent,
-        notes: payload.notes ?? null
-      })
-    })
-
-    return handleResponse<{ data: { id: number } }>(response)
-  },
-  async submitSatisfactionSurvey(payload: SatisfactionSurveyPayload): Promise<{ data: { id: number } }> {
-    const response = await fetch(`${API_BASE_URL}/api/forms/satisfaction`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        full_name: payload.fullName,
-        hn: payload.hn ?? null,
-        service_date: payload.serviceDate,
-        service_type: payload.serviceType,
-        rating: payload.rating,
-        feedback: payload.feedback ?? null,
-        phone: payload.phone ?? null,
-        email: payload.email ?? null,
-        consent: payload.consent
-      })
-    })
-
-    return handleResponse<{ data: { id: number } }>(response)
   }
 }
 

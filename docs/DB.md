@@ -56,21 +56,6 @@ flowchart LR
 
 > ER Diagram ตัวอย่างอยู่ใน `docs/db.drawio` สามารถเปิดด้วย draw.io แล้วปรับตามสคีมาจริงก่อน commit
 
-### 1.3 `medical_record_requests`
-- คอลัมน์: `id`, `full_name`, `hn`, `citizen_id_hash`, `citizen_id_last4`, `phone`, `email`, `address`, `reason`, `consent`, `idcard_path`, timestamps
-- จัดเก็บคำขอคัดสำเนาประวัติการรักษา เฉพาะ hash ของเลขบัตรประชาชน (SHA-256) และ 4 หลักท้ายเพื่อตรวจสอบ
-- ไฟล์บัตรประชาชนเก็บใน `storage/app/private/forms/medical-record-requests/` และต้องกำหนดสิทธิ์เข้าถึงเฉพาะเจ้าหน้าที่ที่ได้รับอนุญาต
-
-### 1.4 `donation_submissions`
-- คอลัมน์: `id`, `donor_name`, `amount` (decimal 12,2), `channel` (`cash/bank_transfer/online`), `phone`, `email`, `wants_receipt`, `consent`, `notes`, timestamps
-- ใช้บันทึกข้อมูลผู้บริจาคเพื่อประสานงานต่อ และเชื่อมกับกระบวนการขอใบเสร็จ/ภาษีในอนาคต
-- เพิ่ม index บน `channel` เพื่อการจัดรายงานตามช่องทางการบริจาค
-
-### 1.5 `satisfaction_surveys`
-- คอลัมน์: `id`, `full_name`, `hn`, `service_date`, `service_type` (`outpatient/inpatient/emergency/telemedicine`), `rating`, `feedback`, `phone`, `email`, `consent`, timestamps
-- รองรับการเก็บคะแนนความพึงพอใจและความคิดเห็นเพิ่มเติม เพื่อนำมาวิเคราะห์คุณภาพบริการรายแผนก
-- สร้าง composite index บน `service_type`, `service_date` สำหรับสรุปข้อมูลตามช่วงเวลา
-
 ## 2. การออกแบบสำหรับโมดูลเพิ่มเติม
 - **แผนก / บุคลากร:** แนะนำตาราง `departments`, `doctors`, `services` ที่โยงถึงกันด้วย FK (`department_id`, `service_id`)
 - **ข้อมูลผู้ป่วย:** หากเพิ่มตารางผู้ป่วย ให้แยกข้อมูลอ่อนไหว (PII/PHI) และเข้ารหัสฟิลด์สำคัญ พร้อมกำหนดสิทธิ์การเข้าถึง
