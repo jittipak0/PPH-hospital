@@ -7,9 +7,6 @@
 | --- | --- | --- | --- | --- | --- |
 | GET | `/api/health` | ไม่ต้องล็อกอิน | ตรวจสุขภาพระบบ (API + DB) | ใช้สำหรับ monitoring | `{ "ok": true }`
 | GET | `/api/news` | ไม่ต้องล็อกอิน | รายการข่าวที่เผยแพร่แล้ว | Query: `page` (เริ่ม 1), `limit` (default 20) | Laravel pagination object ที่มี `data`, `links`, `meta`
-| POST | `/api/forms/medical-record-request` | ไม่ต้องล็อกอิน | ส่งคำขอคัดสำเนาประวัติการรักษา | `multipart/form-data` พร้อมไฟล์ `idcard_file` | 201 + `{ "data": { "id": 1, "citizen_id_last4": "0123" } }`
-| POST | `/api/forms/donation` | ไม่ต้องล็อกอิน | บันทึกความประสงค์บริจาค | `{ "donor_name", "amount", "channel", "consent", ... }` | 201 + `{ "data": { "id": 1, "channel": "bank_transfer" } }`
-| POST | `/api/forms/satisfaction` | ไม่ต้องล็อกอิน | แบบสำรวจความพึงพอใจผู้รับบริการ | `{ "full_name", "service_date", "service_type", "rating", ... }` | 201 + `{ "data": { "id": 1, "rating": 5 } }`
 
 ## 2. Authentication
 | Method | Path | Auth | คำอธิบาย | Payload | Response |

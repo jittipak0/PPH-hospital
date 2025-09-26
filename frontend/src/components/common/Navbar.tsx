@@ -5,7 +5,6 @@ import { LanguageSwitcher } from './LanguageSwitcher'
 import { ThemeToggle } from './ThemeToggle'
 import { DownloadWebViewButton } from './DownloadWebViewButton'
 import { useAuth } from '../../context/AuthContext'
-import { siteSections } from '../../config/siteMap'
 
 interface NavbarProps {
   onIncreaseFont: () => void
@@ -14,6 +13,16 @@ interface NavbarProps {
   onToggleContrast: () => void
 }
 
+const navItems = [
+  { to: '/', key: 'nav.home' },
+  { to: '/about', key: 'nav.about' },
+  { to: '/services', key: 'nav.services' },
+  { to: '/appointment', key: 'nav.appointment' },
+  { to: '/doctors', key: 'nav.doctors' },
+  { to: '/news', key: 'nav.news' },
+  { to: '/contact', key: 'nav.contact' }
+]
+
 export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, isHighContrast, onToggleContrast }) => {
   const { t } = useI18n()
   const [open, setOpen] = useState(false)
@@ -21,14 +30,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
 
   const handleToggleMenu = () => setOpen((prev) => !prev)
   const handleLinkClick = () => setOpen(false)
-  const translateLabel = (label: string, key?: string) => (key ? t(key) : label)
-
-  const staticNavItems = [
-    { to: '/appointment', label: t('nav.appointment') },
-    { to: '/doctors', label: t('nav.doctors') },
-    { to: '/news', label: t('nav.news') },
-    { to: '/contact', label: t('nav.contact') }
-  ]
 
   return (
     <header className="navbar">
@@ -36,39 +37,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
         <Link to="/" className="navbar__brand" onClick={handleLinkClick}>
           โรงพยาบาลโพนพิสัย
         </Link>
-        <button className="navbar__toggle" aria-expanded={open} aria-controls="main-navigation" onClick={handleToggleMenu}>
+        <button
+          className="navbar__toggle"
+          aria-expanded={open}
+          aria-controls="main-navigation"
+          onClick={handleToggleMenu}
+        >
           <span className="visually-hidden">เปิด/ปิดเมนู</span>
           ☰
         </button>
         <nav id="main-navigation" className={`navbar__nav ${open ? 'is-open' : ''}`} aria-label="เมนูหลัก">
           <ul>
-            <li>
-              <NavLink to="/" onClick={handleLinkClick}>
-                {t('nav.home')}
-              </NavLink>
-            </li>
-            {siteSections.map((section) => (
-              <li key={section.id} className={`navbar__item ${section.children ? 'navbar__item--has-children' : ''}`}>
-                <NavLink to={section.path} onClick={handleLinkClick} aria-haspopup={section.children ? 'true' : undefined}>
-                  {translateLabel(section.label, section.labelKey)}
-                </NavLink>
-                {section.children ? (
-                  <ul className="navbar__submenu" aria-label={translateLabel(section.label, section.labelKey)}>
-                    {section.children.map((child) => (
-                      <li key={child.path}>
-                        <NavLink to={child.path} onClick={handleLinkClick}>
-                          {translateLabel(child.label, child.labelKey)}
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </li>
-            ))}
-            {staticNavItems.map((item) => (
-              <li key={item.to}>
+            {navItems.map((item) => (
+              <li key={item.key}>
                 <NavLink to={item.to} onClick={handleLinkClick}>
-                  {item.label}
+                  {t(item.key)}
                 </NavLink>
               </li>
             ))}
@@ -154,36 +137,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
           text-decoration: none;
           color: var(--color-text);
           font-weight: 600;
-          position: relative;
         }
         .navbar__nav a.active {
           color: var(--color-primary);
-        }
-        .navbar__item {
-          position: relative;
-        }
-        .navbar__submenu {
-          position: absolute;
-          left: 0;
-          top: calc(100% + 0.5rem);
-          background: var(--color-surface);
-          border-radius: 16px;
-          box-shadow: var(--shadow-md);
-          list-style: none;
-          padding: 0.75rem 1rem;
-          min-width: 240px;
-          display: none;
-          flex-direction: column;
-          gap: 0.5rem;
-          z-index: 60;
-        }
-        .navbar__submenu a {
-          color: var(--color-text);
-          font-weight: 500;
-        }
-        .navbar__item--has-children:hover .navbar__submenu,
-        .navbar__item--has-children:focus-within .navbar__submenu {
-          display: flex;
         }
         .navbar__actions {
           display: flex;
@@ -220,7 +176,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
             border-bottom: 1px solid rgba(15, 23, 42, 0.08);
             transform: translateY(-120%);
             transition: transform 0.3s ease;
-            width: 100%;
           }
           .navbar__nav.is-open {
             transform: translateY(0);
@@ -228,19 +183,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
           .navbar__nav ul {
             flex-direction: column;
             width: 100%;
-            gap: 1rem;
-          }
-          .navbar__item--has-children {
-            width: 100%;
-          }
-          .navbar__submenu {
-            position: static;
-            display: flex;
-            box-shadow: none;
-            background: rgba(15, 23, 42, 0.04);
-            border-radius: 12px;
-            padding: 0.75rem 1rem;
-            gap: 0.35rem;
           }
           .navbar__actions {
             width: 100%;
