@@ -54,6 +54,74 @@ flowchart LR
 - ใช้แสดงในหน้า public (`/api/news`) และหน้า staff (`/api/staff/news`)
 - ควรสร้าง index เพิ่มบน `published_at` หากมีการ query ตามช่วงเวลา หรือใช้ fulltext บน `title/body` เมื่อต้องการค้นหา
 
+### 1.3 `medical_record_requests`
+- คอลัมน์: `full_name`, `hn`, `citizen_id_hash`, `citizen_id_masked`, `phone`, `email`, `address`, `reason`, `consent`, `idcard_path`, `ip_address`, `user_agent`, timestamps
+- ไว้เก็บคำขอรับสำเนาประวัติการรักษาและข้อมูลเมตาผู้ใช้งาน ข้อมูลบัตรประชาชนถูกแฮชด้วย `SHA-256 + APP_KEY` และเก็บค่า Mask สำหรับ audit เท่านั้น
+- `idcard_path` เก็บเส้นทางไฟล์ใน `storage/app/private/forms` (เก็บนอก webroot)
+- Index: `citizen_id_hash`, `hn`
+
+### 1.4 `donations`
+- คอลัมน์: `donor_name`, `amount`, `channel` (`cash|bank|promptpay`), `phone`, `email`, `note`, `reference_code`, `ip_address`, `user_agent`, timestamps
+- ใช้เก็บรายการบริจาคจากฟอร์มสาธารณะ พร้อมรหัสอ้างอิง (`reference_code`) สำหรับออกใบเสร็จ
+
+### 1.5 `satisfaction_surveys`
+- คอลัมน์: `score_overall`, `score_waittime`, `score_staff`, `comment`, `service_date`, `ip_address`, `user_agent`, timestamps
+- ใช้สรุปคะแนนความพึงพอใจผู้รับบริการ และสามารถนำไปทำ dashboard วิเคราะห์ต่อได้
+
+### 1.6 `health_rider_applications`
+- คอลัมน์: `full_name`, `hn`, `address`, `district`, `province`, `zipcode`, `phone`, `line_id`, `consent`, `ip_address`, `user_agent`, timestamps
+- บันทึกคำขอใช้บริการ Health Rider (ส่งยาถึงบ้าน) พร้อมข้อมูลติดต่อสำหรับทีมเจ้าหน้าที่
+- Index: `hn`, `district`
+
+```mermaid
+erDiagram
+    medical_record_requests {
+        bigint id PK
+        varchar full_name
+        varchar hn
+        varchar citizen_id_hash
+        varchar citizen_id_masked
+        varchar phone
+        varchar email
+        text address
+        text reason
+        bool consent
+        varchar idcard_path
+        varchar ip_address
+        varchar user_agent
+    }
+    donations {
+        bigint id PK
+        varchar donor_name
+        decimal amount
+        varchar channel
+        varchar phone
+        varchar email
+        text note
+        varchar reference_code
+    }
+    satisfaction_surveys {
+        bigint id PK
+        tinyint score_overall
+        tinyint score_waittime
+        tinyint score_staff
+        text comment
+        date service_date
+    }
+    health_rider_applications {
+        bigint id PK
+        varchar full_name
+        varchar hn
+        text address
+        varchar district
+        varchar province
+        varchar zipcode
+        varchar phone
+        varchar line_id
+        bool consent
+    }
+```
+
 > ER Diagram ตัวอย่างอยู่ใน `docs/db.drawio` สามารถเปิดด้วย draw.io แล้วปรับตามสคีมาจริงก่อน commit
 
 ## 2. การออกแบบสำหรับโมดูลเพิ่มเติม

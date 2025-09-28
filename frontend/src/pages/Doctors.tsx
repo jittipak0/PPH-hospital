@@ -4,6 +4,7 @@ import { PageSection } from '../components/layout/PageSection'
 import { SearchBar } from '../components/patient/SearchBar'
 import { ClinicTabs } from '../components/patient/ClinicTabs'
 import { DoctorList } from '../components/patient/DoctorList'
+import { PageMeta } from '../components/seo/PageMeta'
 import { useDoctors } from '../hooks/useDoctors'
 
 export const Doctors: React.FC = () => {
@@ -24,6 +25,15 @@ export const Doctors: React.FC = () => {
 
   return (
     <div>
+      <PageMeta
+        title="ค้นหาแพทย์ | โรงพยาบาลโพนพิสัย"
+        description="ค้นหารายชื่อแพทย์เฉพาะทาง ตารางออกตรวจ และความชำนาญของแพทย์โรงพยาบาลโพนพิสัย"
+        openGraph={{
+          title: 'รายชื่อแพทย์โรงพยาบาลโพนพิสัย',
+          description: 'ค้นหาแพทย์ตามชื่อหรือสาขาความเชี่ยวชาญ พร้อมดูตารางออกตรวจล่าสุด',
+          type: 'article'
+        }}
+      />
       <Container>
         <header>
           <h1>ค้นหาแพทย์</h1>

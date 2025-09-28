@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 
@@ -53,6 +56,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        RateLimiter::for('public-forms', function (Request $request) {
+            $key = $request->ip() ?? 'public-form';
+
+            return [
+                Limit::perMinute(10)->by($key),
+                Limit::perHour(100)->by($key),
+            ];
+        });
     }
 }

@@ -25,6 +25,9 @@
 | QUEUE_CONNECTION | งานคิว | `sync` (dev) / `redis` (prod) | หากใช้ queue worker ให้ตั้ง systemd เพิ่ม |
 | MAIL_MAILER | ส่งอีเมล | `smtp` | ตั้งค่า mail host/username/password เพิ่มเติม |
 | BROADCAST_DRIVER | Realtime | `log` / `pusher` / `redis` | เปิดเมื่อใช้ WebSocket/SSE |
+| FORM_UPLOAD_MAX_MB | จำกัดขนาดไฟล์แนบฟอร์ม (MB) | `5` | ใช้กับคำขอประวัติการรักษา ปรับที่ backend เท่านั้น |
+| FORM_ALLOWED_MIME | MIME type ที่อนุญาต | `application/pdf,image/jpeg,image/png` | คั่นด้วยเครื่องหมายจุลภาค |
+| FORM_ALLOWED_EXT | นามสกุลไฟล์ที่อนุญาต | `pdf,jpg,jpeg,png` | ต้องสอดคล้องกับ MIME type |
 
 ## Frontend (Vite / React)
 | Key | ใช้ทำอะไร | ค่าแนะนำ (ตัวอย่าง) | หมายเหตุ |

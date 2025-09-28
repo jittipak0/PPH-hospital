@@ -6,6 +6,7 @@ import { Grid } from '../components/layout/Grid'
 import { NewsList } from '../components/content/NewsList'
 import { ArticleCard } from '../components/content/ArticleCard'
 import { DownloadWebViewButton } from '../components/common/DownloadWebViewButton'
+import { PageMeta } from '../components/seo/PageMeta'
 import type { NewsItem } from '../lib/api'
 import { useArticlesQuery, useClinicsQuery, useNewsQuery } from '../hooks/useHomeContent'
 import type { BeforeInstallPromptEvent } from '../types/pwa'
@@ -135,8 +136,55 @@ export const Home: React.FC = () => {
     'ยืนยันโดยแตะ Add แอปจะถูกติดตั้งเป็น WebView'
   ]
 
+  const quickLinks = [
+    {
+      title: 'สมัคร Health Rider',
+      description: 'ส่งยาถึงบ้านสำหรับผู้ป่วยโรคเรื้อรัง',
+      href: '/programs/health-rider'
+    },
+    {
+      title: 'บริการออนไลน์',
+      description: 'นัดหมายแพทย์ Telemedicine และติดตามผลตรวจ',
+      href: '/services/online'
+    },
+    {
+      title: 'ทำเนียบผู้บริหาร',
+      description: 'โครงสร้างการบริหารและผู้บริหารระดับสูง',
+      href: '/about/leadership'
+    },
+    {
+      title: 'แบบฟอร์มรับบริจาค',
+      description: 'ร่วมสมทบทุนช่วยเหลือผู้ป่วยยากไร้',
+      href: '/forms/donation'
+    },
+    {
+      title: 'แบบขอประวัติการรักษา',
+      description: 'ยื่นคำขอรับสำเนาประวัติการรักษาออนไลน์',
+      href: '/forms/medical-record-request'
+    },
+    {
+      title: 'จัดซื้อจัดจ้าง/ITA',
+      description: 'ติดตามประกาศจัดซื้อจัดจ้างและรายงานความโปร่งใส',
+      href: '/transparency/procurement-ita'
+    },
+    {
+      title: 'ศูนย์จัดเก็บเอกสาร',
+      description: 'ดาวน์โหลดเอกสารภายใน (เฉพาะบุคลากร)',
+      href: '/intranet/document-center'
+    }
+  ]
+
   return (
     <div className={styles.homePage}>
+      <PageMeta
+        title="โรงพยาบาลโพนพิสัย | บริการสุขภาพครบวงจร"
+        description="โรงพยาบาลโพนพิสัยให้บริการการแพทย์ครบวงจร พร้อมโครงการ Health Rider ส่งยาถึงบ้าน บริการออนไลน์ และข่าวสารสุขภาพล่าสุด"
+        openGraph={{
+          title: 'โรงพยาบาลโพนพิสัย - เพื่อสุขภาพที่ดีของทุกคน',
+          description: 'สำรวจบริการ โครงการเด่น และข่าวสารล่าสุดจากโรงพยาบาลโพนพิสัย พร้อมสมัคร Health Rider และใช้บริการออนไลน์',
+          type: 'website'
+        }}
+      />
       <section className={styles.hero}>
         <Container className={styles.heroContainer}>
           <div className={styles.heroContent}>
@@ -179,6 +227,21 @@ export const Home: React.FC = () => {
           </div>
         </Container>
       </section>
+
+      <PageSection
+        id="quick-links"
+        title="ลิงก์ด่วน"
+        description="เข้าถึงบริการและข้อมูลสำคัญของโรงพยาบาล"
+      >
+        <Grid columns={3}>
+          {quickLinks.map((item) => (
+            <Link key={item.title} to={item.href} className={styles.quickLinkCard}>
+              <span className={styles.quickLinkTitle}>{item.title}</span>
+              <span className={styles.quickLinkDescription}>{item.description}</span>
+            </Link>
+          ))}
+        </Grid>
+      </PageSection>
 
       <PageSection
         id="download"

@@ -3,6 +3,7 @@ import { Container } from '../components/layout/Container'
 import { PageSection } from '../components/layout/PageSection'
 import { Grid } from '../components/layout/Grid'
 import { PackageCard } from '../components/patient/PackageCard'
+import { PageMeta } from '../components/seo/PageMeta'
 import { api, type Clinic, type HealthPackage } from '../lib/api'
 
 export const Services: React.FC = () => {
@@ -26,6 +27,15 @@ export const Services: React.FC = () => {
 
   return (
     <div>
+      <PageMeta
+        title="บริการสำหรับผู้ป่วย | โรงพยาบาลโพนพิสัย"
+        description="สำรวจคลินิกเฉพาะทาง โปรแกรมตรวจสุขภาพ และขั้นตอนการเข้ารับบริการของโรงพยาบาลโพนพิสัย"
+        openGraph={{
+          title: 'บริการผู้ป่วยโรงพยาบาลโพนพิสัย',
+          description: 'คลินิกเฉพาะทาง โปรแกรมตรวจสุขภาพ และสิทธิการรักษาพยาบาลจากโรงพยาบาลโพนพิสัย',
+          type: 'article'
+        }}
+      />
       <Container>
         <header>
           <h1>บริการสำหรับผู้ป่วย</h1>

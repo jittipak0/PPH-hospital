@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { secureApi } from '../lib/secureApi'
+import { PageMeta } from '../components/seo/PageMeta'
 
 export const TermsPage: React.FC = () => {
   const [content, setContent] = useState('')
@@ -13,6 +14,15 @@ export const TermsPage: React.FC = () => {
 
   return (
     <section className="policy-page">
+      <PageMeta
+        title="ข้อตกลงการใช้งาน | โรงพยาบาลโพนพิสัย"
+        description="เงื่อนไขการใช้งานเว็บไซต์โรงพยาบาลโพนพิสัยและความรับผิดชอบของผู้ใช้บริการ"
+        openGraph={{
+          title: 'ข้อตกลงการใช้งานโรงพยาบาลโพนพิสัย',
+          description: 'อ่านข้อกำหนดการใช้งานเว็บไซต์และบริการออนไลน์ของโรงพยาบาลโพนพิสัย',
+          type: 'article'
+        }}
+      />
       <h1>ข้อตกลงการใช้งาน</h1>
       <p>{content}</p>
       <style>{`
