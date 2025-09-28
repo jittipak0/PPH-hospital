@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Container } from '../components/layout/Container'
 import { PageSection } from '../components/layout/PageSection'
+import { PageMeta } from '../components/seo/PageMeta'
 import { api } from '../lib/api'
 import { contactSchema, type ContactFormValues } from '../lib/validators'
 
@@ -50,6 +51,15 @@ export const Contact: React.FC = () => {
 
   return (
     <div>
+      <PageMeta
+        title="ติดต่อโรงพยาบาล | โรงพยาบาลโพนพิสัย"
+        description="ติดต่อโรงพยาบาลโพนพิสัยสำหรับสอบถามข้อมูล นัดหมาย และส่งข้อเสนอแนะผ่านแบบฟอร์มออนไลน์"
+        openGraph={{
+          title: 'ติดต่อโรงพยาบาลโพนพิสัย',
+          description: 'ข้อมูลติดต่อโรงพยาบาล ช่องทางโทรศัพท์ อีเมล และแบบฟอร์มแจ้งข้อเสนอแนะออนไลน์',
+          type: 'article'
+        }}
+      />
       <Container>
         <header>
           <h1>ติดต่อโรงพยาบาล</h1>

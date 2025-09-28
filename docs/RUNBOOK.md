@@ -11,6 +11,7 @@
 - [ ] PR ทั้งหมด merge เข้า `main` และผ่าน CI (lint, test, build)
 - [ ] อัปเดต `docs/CHANGELOG.md` ระบุฟีเจอร์/แก้ไข/ผลกระทบ
 - [ ] ตรวจสอบ Migration ใหม่และเตรียมแผน rollback (มีสำรองข้อมูลล่าสุด)
+- [ ] สร้าง/ตรวจสอบโฟลเดอร์ `storage/app/private/forms` ให้ web user เขียนได้ (เก็บไฟล์อัปโหลดจากฟอร์มสาธารณะ)
 - [ ] ค่า ENV ใน staging = production (ยกเว้น secret) โดยเฉพาะ `DATASTORE_DRIVER`/`DATASTORE_CONNECTION` และทดสอบรอบสุดท้ายผ่าน Postman
 - [ ] แจ้งทีมที่เกี่ยวข้องอย่างน้อย 4 ชั่วโมงก่อน deploy
 
@@ -23,8 +24,9 @@
 4. ตรวจสอบไฟล์ `.env` ว่าอัปเดตค่าล่าสุดแล้ว (APP_KEY, SANCTUM, DB, QUEUE, DATASTORE\_*)
    - หากยังไม่มี `APP_KEY` ให้รัน `php artisan key:generate --force`
 5. หาก `DATASTORE_DRIVER=eloquent` ให้รัน migration: `php artisan migrate --force`
-6. เคลียร์/คอมไพล์แคช: `php artisan config:cache && php artisan route:cache && php artisan view:cache`
-7. รีสตาร์ต queue worker (ถ้ามี): `php artisan queue:restart`
+6. ตรวจสอบว่า `storage/app/private/forms` มีอยู่จริง และสิทธิ์ถูกต้อง (`mkdir -p storage/app/private/forms && chown www-data`) 
+7. เคลียร์/คอมไพล์แคช: `php artisan config:cache && php artisan route:cache && php artisan view:cache`
+8. รีสตาร์ต queue worker (ถ้ามี): `php artisan queue:restart`
 
 ### 3.2 Frontend (Vite Build)
 1. เข้าโฟลเดอร์ `frontend`

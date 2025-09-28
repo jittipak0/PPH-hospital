@@ -10,11 +10,13 @@
 - ใช้ Sanctum token abilities (`viewer`, `staff`, `admin`) และตรวจสอบสิทธิ์ใน policy/service ทุกครั้ง
 - เปิด rate limit สำหรับ endpoint สำคัญ เช่น login, news CRUD (เช่น `60 requests/min/user`)
 - จัดการไฟล์อัปโหลด: ตรวจ MIME/ขนาดไฟล์ เก็บนอก webroot และสแกนไวรัสก่อนให้ดาวน์โหลด
+- ฟอร์มสาธารณะ (เวชระเบียน/บริจาค/ประเมิน/Health Rider) ต้องเรียก CSRF token ก่อนส่ง, ตรวจสอบ `X-Requested-With`, และใช้ rate limit `throttle:public-forms`
 - จัดการ dependency ด้วย Dependabot/Renovate และตรวจสอบช่องโหว่ผ่าน `npm audit` / `composer audit`
 
 ## 2. ข้อมูลและความเป็นส่วนตัว
 - เก็บข้อมูลส่วนบุคคลตามหลักการ minimized: เก็บเท่าที่จำเป็น
 - เข้ารหัสข้อมูลอ่อนไหว (เช่น หมายเลขเวชระเบียน) ด้วย `Crypt::encrypt` หรือ column encryption
+- หมายเลขบัตรประชาชนที่รับผ่านฟอร์มเวชระเบียนให้แฮชด้วย SHA-256 + APP_KEY และเก็บเฉพาะค่า mask ที่แสดงได้ (`1234*******23`)
 - แยกสิทธิ์การเข้าถึงข้อมูลตามบทบาทในฐานข้อมูล (database user แยกสำหรับ read/write) และจำกัดสิทธิ์ service account ให้มีเพียง CRUD ตามที่ API ต้องการ
 - หมุนรหัสผ่าน/secret ของ service account อย่างน้อยทุก 90 วัน หรือทันทีที่มีเหตุสงสัยว่าจะรั่วไหล พร้อมอัปเดต secret manager
 - บันทึกการเข้าถึงข้อมูลสำคัญ (audit trail) เพื่อรองรับการตรวจสอบย้อนหลัง

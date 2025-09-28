@@ -2,10 +2,20 @@ import React from 'react'
 import { Container } from '../components/layout/Container'
 import { PageSection } from '../components/layout/PageSection'
 import { Grid } from '../components/layout/Grid'
+import { PageMeta } from '../components/seo/PageMeta'
 
 export const About: React.FC = () => {
   return (
     <div>
+      <PageMeta
+        title="เกี่ยวกับโรงพยาบาลโพนพิสัย | วิสัยทัศน์และบริการ"
+        description="ทำความรู้จักโรงพยาบาลโพนพิสัย วิสัยทัศน์ การพัฒนาบริการ และศูนย์การแพทย์เฉพาะทาง"
+        openGraph={{
+          title: 'เกี่ยวกับโรงพยาบาลโพนพิสัย',
+          description: 'ศึกษาวิสัยทัศน์ ประวัติ และบริการเฉพาะทางของโรงพยาบาลโพนพิสัย',
+          type: 'article'
+        }}
+      />
       <Container>
         <header>
           <h1>เกี่ยวกับโรงพยาบาลโพนพิสัย</h1>

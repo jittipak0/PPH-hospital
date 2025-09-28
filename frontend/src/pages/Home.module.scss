@@ -348,3 +348,31 @@
     grid-template-columns: 1fr;
   }
 }
+
+.quickLinkCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quickLinkCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.quickLinkTitle {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.quickLinkDescription {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+

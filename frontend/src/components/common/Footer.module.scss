@@ -36,12 +36,31 @@
   color: rgba(248, 250, 252, 0.78);
 }
 
+.linksNav {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+.linkGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.linkHeading {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(248, 250, 252, 0.92);
+}
+
 .linkList {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 .link {

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.example-hospital.go.th/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url><loc>https://www.example-hospital.go.th/about</loc></url>
+  <url><loc>https://www.example-hospital.go.th/about/leadership</loc></url>
+  <url><loc>https://www.example-hospital.go.th/about/history</loc></url>
+  <url><loc>https://www.example-hospital.go.th/about/vision-mission-values</loc></url>
+  <url><loc>https://www.example-hospital.go.th/ethics</loc></url>
+  <url><loc>https://www.example-hospital.go.th/ethics/club</loc></url>
+  <url><loc>https://www.example-hospital.go.th/ethics/anti-stigma</loc></url>
+  <url><loc>https://www.example-hospital.go.th/ethics/laws-acts</loc></url>
+  <url><loc>https://www.example-hospital.go.th/academic/publications</loc></url>
+  <url><loc>https://www.example-hospital.go.th/programs/health-rider</loc></url>
+  <url><loc>https://www.example-hospital.go.th/services</loc></url>
+  <url><loc>https://www.example-hospital.go.th/services/online</loc></url>
+  <url><loc>https://www.example-hospital.go.th/transparency/procurement-ita</loc></url>
+  <url><loc>https://www.example-hospital.go.th/forms/medical-record-request</loc></url>
+  <url><loc>https://www.example-hospital.go.th/forms/donation</loc></url>
+  <url><loc>https://www.example-hospital.go.th/forms/satisfaction</loc></url>
+  <url><loc>https://www.example-hospital.go.th/doctors</loc></url>
+  <url><loc>https://www.example-hospital.go.th/appointment</loc></url>
+  <url><loc>https://www.example-hospital.go.th/news</loc></url>
+  <url><loc>https://www.example-hospital.go.th/contact</loc></url>
+  <url><loc>https://www.example-hospital.go.th/sitemap</loc></url>
+</urlset>

@@ -2,10 +2,20 @@ import React from 'react'
 import { Container } from '../components/layout/Container'
 import { PageSection } from '../components/layout/PageSection'
 import { AppointmentForm } from '../components/patient/AppointmentForm'
+import { PageMeta } from '../components/seo/PageMeta'
 
 export const Appointment: React.FC = () => {
   return (
     <div>
+      <PageMeta
+        title="นัดหมายแพทย์ออนไลน์ | โรงพยาบาลโพนพิสัย"
+        description="จองคิวพบแพทย์ล่วงหน้า สะดวก รวดเร็ว พร้อมรับการยืนยันจากเจ้าหน้าที่ภายใน 24 ชั่วโมง"
+        openGraph={{
+          title: 'จองนัดแพทย์โรงพยาบาลโพนพิสัย',
+          description: 'ระบบนัดหมายออนไลน์สำหรับเลือกแพทย์และเวลาที่สะดวก พร้อมคำแนะนำเตรียมตัวก่อนมาตรวจ',
+          type: 'article'
+        }}
+      />
       <Container>
         <header>
           <h1>นัดหมายแพทย์ออนไลน์</h1>

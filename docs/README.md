@@ -7,7 +7,7 @@
 - **Backend:** Laravel 11 (API only) + Sanctum (token abilities) พร้อมสคริปต์ล็อกอิน/จัดการข่าวสาร
 - **ฐานข้อมูล:** MySQL หรือ MariaDB
 - **เว็บเซิร์ฟเวอร์:** Nginx + PHP-FPM (ตัวอย่างไฟล์คอนฟิกในโฟลเดอร์ `nginx/`)
-- **CI/CD:** ตัวอย่าง workflow บน GitHub Actions (build frontend, scaffold PHPUnit สำหรับ backend)
+- **CI/CD:** ตัวอย่าง workflow บน GitHub Actions (frontend build/test + backend PHPUnit บน SQLite in-memory)
 - **เอกสารเพิ่ม:** Postman collection, systemd unit และ runbook
 
 ## โครงสร้างโครงการ
@@ -21,6 +21,14 @@ docs/                # เอกสารประกอบ (Coding rules, ENV, 
 ```
 
 > โฟลเดอร์ `backend/` มีเพียงซอร์สตัวอย่าง (snippet) เพื่อคัดลอกไปวางในโปรเจ็กต์ Laravel ที่สร้างใหม่ ทีมยังต้องรัน `composer create-project` เพื่อเตรียมโครง Laravel จริงก่อนเริ่มงาน
+
+## ฟีเจอร์ที่เตรียมไว้ในสตาร์ตเตอร์
+- ชุดหน้าเว็บสาธารณะครบหมวด (เกี่ยวกับโรงพยาบาล, ธรรมาภิบาล, วิชาการ, บริการออนไลน์, แบบฟอร์ม และระบบภายใน)
+- ฟอร์มออนไลน์ 4 รายการที่เชื่อมกับ Laravel API (`/forms/medical-record-request`, `/forms/donation`, `/forms/satisfaction`, `/programs/health-rider/apply`)
+- ระบบเมตาแท็ก (title, description, Open Graph) และ breadcrumb สำหรับทุกหน้า
+- โครงสร้าง RBAC ฝั่ง frontend สำหรับหน้า `/intranet/*` และ Quick links หน้าแรกเพื่อเข้าถึงหมวดสำคัญอย่างรวดเร็ว
+- Backend API รองรับไฟล์อัปโหลด (จัดเก็บใน `storage/app/private/forms`), ตรวจสอบ CSRF, ตรวจสอบ MIME จริง และล็อก IP/User Agent
+- GitHub Actions workflow `backend-ci.yml` และ `web-ci.yml` รัน PHPUnit + Vite test/build อัตโนมัติบนทุก PR
 
 ## ขั้นตอนเริ่มต้นอย่างรวดเร็ว
 
@@ -58,7 +66,7 @@ npm run dev                 # พัฒนาบน http://localhost:5173
 
 ## การติดตั้งเครื่องมือเสริม (แนะนำ)
 - เปิดใช้ Laravel Pint (`composer require laravel/pint --dev`) สำหรับจัดรูปแบบโค้ด
-- ติดตั้ง ESLint + Prettier (`npm install -D eslint prettier eslint-plugin-react`) และคัดลอกคอนฟิกจาก `docs/CODING_RULES.md`
+- ตั้งค่า ESLint/Vitest เพิ่มเติมตามกฎใน `docs/CODING_RULES.md`
 - ตั้งค่า Git hooks ผ่าน Husky เพื่อตรวจสอบ lint/test ก่อน commit
 
 ## แนวทางสภาพแวดล้อมพัฒนาและดีพลอย
@@ -74,6 +82,7 @@ npm run dev                 # พัฒนาบน http://localhost:5173
 - ติดตั้ง Git, PHP-FPM 8.x, Composer และส่วนขยาย Laravel ที่จำเป็น จากนั้น `git pull` โค้ด production, รัน `composer install --no-dev`, อัปเดต `.env`, แล้วสั่ง `php artisan migrate --force` พร้อมคำสั่ง cache (`config:cache`, `route:cache`, `queue:restart`)
 - ฝั่ง frontend ให้รัน `npm ci` และ `npm run build` แล้วนำไฟล์ใน `dist/` ไปเสิร์ฟผ่าน Nginx โดยใช้ไฟล์ตัวอย่างใน `nginx/` เป็นแม่แบบ (ตั้งค่า proxy `/api` ไป backend)
 - เปิดใช้ systemd service/timer ตามไฟล์ใน `systemd/` สำหรับ queue worker (`queue:work`) และ scheduler (`schedule:run`) เพื่อให้ artisan ทำงานอัตโนมัติ
+- สร้างโฟลเดอร์ `storage/app/private/forms` และกำหนดสิทธิ์ให้ web user เขียนได้ (ใช้เก็บไฟล์แนบจากฟอร์มคำขอเวชระเบียน)
 - หลังดีพลอยตรวจสอบ `GET /api/health`, ดูสถานะบริการ (`systemctl status nginx php-fpm`), และทำตามขั้นตอน post-deploy/checklist ใน `docs/RUNBOOK.md`
 
 ## การสนับสนุนและการปรับแก้

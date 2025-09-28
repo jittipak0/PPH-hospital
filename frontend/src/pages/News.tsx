@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Container } from '../components/layout/Container'
 import { PageSection } from '../components/layout/PageSection'
 import { NewsList } from '../components/content/NewsList'
+import { PageMeta } from '../components/seo/PageMeta'
 import { api, type NewsItem } from '../lib/api'
 
 export const News: React.FC = () => {
@@ -24,6 +25,15 @@ export const News: React.FC = () => {
 
   return (
     <div>
+      <PageMeta
+        title="ข่าวสารและกิจกรรม | โรงพยาบาลโพนพิสัย"
+        description="อัปเดตข่าวประกาศ กิจกรรม และสาระสุขภาพจากโรงพยาบาลโพนพิสัย"
+        openGraph={{
+          title: 'ข่าวสารโรงพยาบาลโพนพิสัย',
+          description: 'ติดตามข่าวกิจกรรม การอบรม และสาระสุขภาพล่าสุดจากโรงพยาบาลโพนพิสัย',
+          type: 'article'
+        }}
+      />
       <Container>
         <header>
           <h1>ข่าวสารและกิจกรรม</h1>
