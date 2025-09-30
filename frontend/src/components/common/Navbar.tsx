@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useI18n } from '../../lib/i18n'
 import { LanguageSwitcher } from './LanguageSwitcher'
@@ -89,6 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
   const [openDropdownKey, setOpenDropdownKey] = useState<string | null>(null)
   const { isAuthenticated, user, logout } = useAuth()
   const location = useLocation()
+  const closeDropdownTimeoutRef = useRef<number | null>(null)
 
   const handleToggleMenu = () => setOpen((prev) => !prev)
   const handleLinkClick = () => {
@@ -102,16 +103,63 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
     }
   }, [open])
 
+  useEffect(() => {
+    return () => {
+      if (closeDropdownTimeoutRef.current !== null) {
+        window.clearTimeout(closeDropdownTimeoutRef.current)
+        closeDropdownTimeoutRef.current = null
+      }
+    }
+  }, [])
+
+  const clearCloseDropdownTimeout = () => {
+    if (closeDropdownTimeoutRef.current !== null) {
+      window.clearTimeout(closeDropdownTimeoutRef.current)
+      closeDropdownTimeoutRef.current = null
+    }
+  }
+
+  const scheduleDropdownClose = () => {
+    clearCloseDropdownTimeout()
+    closeDropdownTimeoutRef.current = window.setTimeout(() => {
+      closeDropdownTimeoutRef.current = null
+      setOpenDropdownKey(null)
+    }, 220)
+  }
+
   const toggleDropdown = (key: string) => {
+    clearCloseDropdownTimeout()
     setOpenDropdownKey((current) => (current === key ? null : key))
   }
 
   const openDropdown = (key: string) => {
+    clearCloseDropdownTimeout()
     setOpenDropdownKey(key)
   }
 
   const closeDropdown = () => {
+    clearCloseDropdownTimeout()
     setOpenDropdownKey(null)
+  }
+
+  const handleGroupMouseEnter = (key: string) => {
+    openDropdown(key)
+  }
+
+  const handleGroupMouseLeave = () => {
+    scheduleDropdownClose()
+  }
+
+  const handleGroupFocus = (key: string) => {
+    openDropdown(key)
+  }
+
+  const handleGroupBlur = (event: React.FocusEvent<HTMLLIElement>) => {
+    const next = event.relatedTarget as Node | null
+
+    if (!next || !event.currentTarget.contains(next)) {
+      scheduleDropdownClose()
+    }
   }
 
   return (
@@ -146,8 +194,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
                 <li
                   key={item.key}
                   className={hasChildren ? styles.navGroup : undefined}
-                  onMouseEnter={hasChildren ? () => openDropdown(item.key) : undefined}
-                  onMouseLeave={hasChildren ? closeDropdown : undefined}
+                  onMouseEnter={hasChildren ? () => handleGroupMouseEnter(item.key) : undefined}
+                  onMouseLeave={hasChildren ? handleGroupMouseLeave : undefined}
+                  onFocus={hasChildren ? () => handleGroupFocus(item.key) : undefined}
+                  onBlur={hasChildren ? handleGroupBlur : undefined}
                 >
                   {hasChildren ? (
                     <div className={styles.navGroupHeader}>
@@ -197,7 +247,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onIncreaseFont, onDecreaseFont, 
                     </NavLink>
                   )}
                   {hasChildren ? (
-                    <ul className={`${styles.navSubList} ${isGroupOpen ? styles.navSubListOpen : ''}`.trim()}>
+                    <ul
+                      className={`${styles.navSubList} ${isGroupOpen ? styles.navSubListOpen : ''}`.trim()}
+                      onMouseEnter={() => handleGroupMouseEnter(item.key)}
+                      onMouseLeave={handleGroupMouseLeave}
+                    >
                       {item.children?.map((child) => (
                         <li key={child.key}>
                           <NavLink
