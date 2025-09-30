@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { secureApi, type AuthenticatedUser, type Role } from '../../lib/secureApi'
 import { useAuth } from '../../context/AuthContext'
+import { AdminNewsManager } from './AdminNewsManager'
 
 type AuditLog = {
   id: string
@@ -123,6 +124,11 @@ export const AdminDashboard: React.FC = () => {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="admin-dashboard__panel">
+        <h2>จัดการข่าวและสไลด์หน้าแรก</h2>
+        <AdminNewsManager />
       </section>
 
       <section className="admin-dashboard__panel">

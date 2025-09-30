@@ -1,3 +1,5 @@
+import type { NewsItem } from './api'
+
 export type Role = 'admin' | 'doctor' | 'nurse' | 'staff'
 
 export type AuthenticatedUser = {
@@ -11,6 +13,16 @@ export type LoginResponse = {
   accessToken: string
   refreshToken: string
   user: AuthenticatedUser
+}
+
+type NewsMutationPayload = {
+  title: string
+  summary: string
+  content: string
+  imageUrl: string
+  publishedAt?: string
+  isFeatured?: boolean
+  displayOrder?: number
 }
 
 const API_BASE = import.meta.env.VITE_SECURE_API ?? 'http://localhost:4000/api'
@@ -112,6 +124,32 @@ export const secureApi = {
         accessToken
       }
     )
+  },
+  async listAllNews(accessToken: string) {
+    return request<{ news: NewsItem[] }>('/news', { accessToken })
+  },
+  async createNews(accessToken: string, payload: NewsMutationPayload) {
+    return request<{ news: NewsItem }>('/news', {
+      method: 'POST',
+      accessToken,
+      body: payload,
+      csrf: true
+    })
+  },
+  async updateNews(accessToken: string, newsId: string, payload: Partial<NewsMutationPayload>) {
+    return request<{ news: NewsItem }>(`/news/${newsId}`, {
+      method: 'PUT',
+      accessToken,
+      body: payload,
+      csrf: true
+    })
+  },
+  async deleteNews(accessToken: string, newsId: string) {
+    await request(`/news/${newsId}`, {
+      method: 'DELETE',
+      accessToken,
+      csrf: true
+    })
   },
   async listUsers(accessToken: string) {
     return request<{ users: AuthenticatedUser[] }>('/users', { accessToken })

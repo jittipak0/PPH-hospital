@@ -7,6 +7,7 @@ const staffRoutes = require('./staffRoutes')
 const policyRoutes = require('./policyRoutes')
 const accountRoutes = require('./accountRoutes')
 const securityRoutes = require('./securityRoutes')
+const newsRoutes = require('./newsRoutes')
 
 const router = express.Router()
 
@@ -18,5 +19,6 @@ router.use('/staff', staffRoutes)
 router.use('/policies', policyRoutes)
 router.use('/account', accountRoutes)
 router.use('/security', securityRoutes)
+router.use('/news', newsRoutes)
 
 module.exports = router

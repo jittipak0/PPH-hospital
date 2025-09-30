@@ -67,7 +67,9 @@ const createNews = (): NewsItem[] => [
     summary: 'สรุปข่าว',
     content: 'รายละเอียดข่าว',
     publishedAt: new Date().toISOString(),
-    imageUrl: 'https://example.com/news.jpg'
+    imageUrl: 'https://example.com/news.jpg',
+    isFeatured: true,
+    displayOrder: 1
   }
 ]
 

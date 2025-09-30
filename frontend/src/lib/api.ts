@@ -28,6 +28,8 @@ export type NewsItem = {
   content: string
   publishedAt: string
   imageUrl: string
+  isFeatured: boolean
+  displayOrder: number
 }
 
 export type Article = {
@@ -64,6 +66,53 @@ export type ContactPayload = {
   message: string
   consent: boolean
 }
+
+const PUBLIC_API_BASE = import.meta.env.VITE_PUBLIC_API ?? 'http://localhost:4000/api'
+
+const toIsoString = (value: unknown): string => {
+  if (typeof value === 'string') {
+    const parsed = new Date(value)
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toISOString()
+    }
+  }
+  return new Date().toISOString()
+}
+
+const normalizeNewsItem = (raw: unknown): NewsItem | null => {
+  if (!raw || typeof raw !== 'object') {
+    return null
+  }
+  const candidate = raw as Record<string, unknown>
+  const id = typeof candidate.id === 'string' ? candidate.id : undefined
+  const title = typeof candidate.title === 'string' ? candidate.title.trim() : ''
+  const summary = typeof candidate.summary === 'string' ? candidate.summary.trim() : ''
+  const content = typeof candidate.content === 'string' ? candidate.content.trim() : ''
+  const imageUrl = typeof candidate.imageUrl === 'string' ? candidate.imageUrl : ''
+
+  if (!id || title.length === 0 || summary.length === 0 || content.length === 0 || imageUrl.length === 0) {
+    return null
+  }
+
+  const displayOrderRaw = candidate.displayOrder
+  const displayOrder = typeof displayOrderRaw === 'number' && Number.isFinite(displayOrderRaw) ? displayOrderRaw : 0
+
+  return {
+    id,
+    title,
+    summary,
+    content,
+    imageUrl,
+    publishedAt: toIsoString(candidate.publishedAt),
+    isFeatured: Boolean(candidate.isFeatured),
+    displayOrder
+  }
+}
+
+const sortNews = (items: NewsItem[]) =>
+  [...items].sort(
+    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  )
 
 const clinics: Clinic[] = [
   {
@@ -134,7 +183,9 @@ const newsItems: NewsItem[] = [
     content:
       'โรงพยาบาลพร้อมให้บริการฟื้นฟูผู้ป่วยโรคหลอดเลือดสมองครบวงจร ตั้งแต่การรักษาเฉียบพลัน การฟื้นฟูทางกายภาพ และการติดตามที่บ้าน โดยทำงานร่วมกับทีมกายภาพบำบัด โภชนาการ และนักจิตวิทยา',
     publishedAt: '2024-09-12T08:00:00.000Z',
-    imageUrl: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3'
+    imageUrl: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3',
+    isFeatured: true,
+    displayOrder: 1
   },
   {
     id: 'n2',
@@ -143,7 +194,9 @@ const newsItems: NewsItem[] = [
     content:
       'เพื่อป้องกันการแพร่ระบาดของไข้หวัดใหญ่ โรงพยาบาลจัดบริการฉีดวัคซีนฟรีสำหรับกลุ่มเสี่ยงทุกวันอังคาร-พฤหัสบดี เวลา 09:00-15:00 น. ที่คลินิกเวชปฏิบัติทั่วไป ชั้น 2 อาคารผู้ป่วยนอก',
     publishedAt: '2024-08-30T08:00:00.000Z',
-    imageUrl: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b'
+    imageUrl: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b',
+    isFeatured: true,
+    displayOrder: 2
   },
   {
     id: 'n1',
@@ -152,7 +205,9 @@ const newsItems: NewsItem[] = [
     content:
       'งานวิ่งแบ่งออกเป็น 3 ระยะ 3 กม. 5 กม. และ 10 กม. รายได้หลังหักค่าใช้จ่ายจะนำไปจัดซื้ออุปกรณ์ทางการแพทย์สำหรับผู้ป่วยยากไร้ ผู้สนใจสมัครได้ที่เว็บไซต์และเคาน์เตอร์ประชาสัมพันธ์',
     publishedAt: '2024-07-22T08:00:00.000Z',
-    imageUrl: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017'
+    imageUrl: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017',
+    isFeatured: false,
+    displayOrder: 3
   }
 ]
 
@@ -204,8 +259,25 @@ export const api = {
     return doctors
   },
   async fetchNews(): Promise<NewsItem[]> {
-    await delay(100)
-    return [...newsItems].sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1))
+    try {
+      const response = await fetch(`${PUBLIC_API_BASE}/news`)
+      if (!response.ok) {
+        throw new Error(`Unable to fetch news: ${response.status}`)
+      }
+      const payload: unknown = await response.json()
+      const rawNews =
+        payload && typeof payload === 'object' && Array.isArray((payload as { news?: unknown }).news)
+          ? ((payload as { news: unknown[] }).news)
+          : []
+      const normalized = rawNews
+        .map((item) => normalizeNewsItem(item))
+        .filter((item): item is NewsItem => item !== null)
+      return sortNews(normalized)
+    } catch (error) {
+      console.warn('Falling back to bundled news dataset', error)
+      await delay(100)
+      return sortNews(newsItems)
+    }
   },
   async fetchArticles(): Promise<Article[]> {
     await delay(90)
@@ -228,4 +300,3 @@ export const api = {
     console.info('Contact message submitted', { ...payload, message: sanitizedMessage })
   }
 }
-
