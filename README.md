@@ -8,6 +8,48 @@
 - **Infrastructure / Adapters** – การเชื่อมต่อจริงกับ Eloquent หรือหน่วยความจำ (`App\Infrastructure\Persistence\Eloquent\UserRepository`, `...\Memory\UserRepository`).
 - Dependency ถูกจัดการด้วย Service Container ผ่านไฟล์ `config/datastore.php` เพื่อ map interface → adapter ตาม driver ที่เลือก
 
+## ขั้นตอนเตรียมทรัพยากรตั้งแต่ติดตั้ง Linux
+1. **ติดตั้งดิสโทร Linux** – แนะนำ Ubuntu LTS (เช่น 22.04) สำหรับสภาพแวดล้อมที่มีแพ็กเกจครบและรองรับระยะยาว
+2. **อัปเดตระบบพื้นฐาน**
+   ```bash
+   sudo apt update && sudo apt upgrade -y
+   ```
+3. **ติดตั้งเครื่องมือพื้นฐาน** – Git, curl, unzip, build-essential
+   ```bash
+   sudo apt install -y git curl unzip build-essential
+   ```
+4. **ติดตั้ง Docker และ Docker Compose Plugin** – ตามคู่มือ [Docker Engine on Ubuntu](https://docs.docker.com/engine/install/ubuntu/) แล้วตรวจสอบด้วย `docker --version` และ `docker compose version`
+5. **ติดตั้ง Node.js + pnpm** – ใช้ [NodeSource](https://github.com/nodesource/distributions) เพื่อติดตั้ง Node.js LTS จากนั้นติดตั้ง pnpm (ใช้ใน frontend)
+   ```bash
+   corepack enable
+   corepack prepare pnpm@latest --activate
+   ```
+6. **ติดตั้ง PHP และ Composer** – หากต้องการรัน Laravel นอก Docker ให้ติดตั้ง PHP 8.2+, ส่วนขยาย (`php8.2-cli php8.2-mbstring php8.2-xml php8.2-sqlite3 php8.2-mysql` เป็นต้น) และ Composer ตามเอกสารทางการ
+7. **โคลนโปรเจ็กต์และเตรียมไฟล์สภาพแวดล้อม**
+   ```bash
+   git clone https://github.com/<org>/PPH-hospital.git
+   cd PPH-hospital/backend
+   cp .env.example .env
+   ```
+8. **สร้างทรัพยากรใน Docker (ทางเลือกแนะนำ)**
+   ```bash
+   docker compose up -d --build
+   docker compose exec backend composer install
+   docker compose exec backend php artisan key:generate
+   docker compose exec backend php artisan migrate --force
+   ```
+9. **ติดตั้ง dependency สำหรับ frontend**
+   ```bash
+   cd ../frontend
+   pnpm install
+   ```
+10. **ตรวจสุขภาพระบบ** – รันชุดทดสอบหรือ health check
+    ```bash
+    cd ../backend
+    php artisan test
+    curl http://localhost:8000/api/health
+    ```
+
 ## วิธีสลับฐานข้อมูล
 1. แก้ไข `.env` (หรือ `.env.testing`) ให้กำหนด
    ```ini
