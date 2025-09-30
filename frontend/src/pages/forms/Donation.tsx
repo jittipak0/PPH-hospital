@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Container } from '../../components/layout/Container'
 import { PageSection } from '../../components/layout/PageSection'
 import { PageMeta } from '../../components/seo/PageMeta'
-import { formsApi, FormApiError, type ValidationErrors } from '../../lib/formsApi'
+import { formsApi, FormApiError } from '../../lib/formsApi'
+import { applyServerValidationErrors } from '../../lib/formErrors'
 import { donationSchema, type DonationFormValues } from '../../lib/validators'
 import styles from './Forms.module.scss'
 
@@ -15,19 +16,6 @@ const fieldNameMap: Record<string, keyof DonationFormValues> = {
   phone: 'phone',
   email: 'email',
   note: 'note'
-}
-
-const applyFieldErrors = (
-  errors: ValidationErrors,
-  setError: ReturnType<typeof useForm<DonationFormValues>>['setError']
-) => {
-  Object.entries(errors).forEach(([field, messages]) => {
-    const mapped = fieldNameMap[field] ?? (field as keyof DonationFormValues)
-    const [message] = messages
-    if (message) {
-      setError(mapped, { type: 'server', message })
-    }
-  })
 }
 
 export const DonationPage: React.FC = () => {
@@ -73,7 +61,7 @@ export const DonationPage: React.FC = () => {
     } catch (error) {
       if (error instanceof FormApiError) {
         if (error.fieldErrors) {
-          applyFieldErrors(error.fieldErrors, setError)
+          applyServerValidationErrors(error.fieldErrors, setError, fieldNameMap)
         }
         setStatus('error')
         setStatusMessage(error.message)

@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Container } from '../../components/layout/Container'
 import { PageSection } from '../../components/layout/PageSection'
 import { PageMeta } from '../../components/seo/PageMeta'
-import { formsApi, FormApiError, type ValidationErrors } from '../../lib/formsApi'
+import { formsApi, FormApiError } from '../../lib/formsApi'
+import { applyServerValidationErrors } from '../../lib/formErrors'
 import { medicalRecordRequestSchema, type MedicalRecordRequestFormValues } from '../../lib/validators'
 import styles from './Forms.module.scss'
 
@@ -17,19 +18,6 @@ const fieldNameMap: Record<string, keyof MedicalRecordRequestFormValues> = {
   address: 'address',
   reason: 'reason',
   consent: 'consent'
-}
-
-const applyFieldErrors = (
-  errors: ValidationErrors,
-  setError: ReturnType<typeof useForm<MedicalRecordRequestFormValues>>['setError']
-) => {
-  Object.entries(errors).forEach(([field, messages]) => {
-    const mapped = fieldNameMap[field] ?? (field as keyof MedicalRecordRequestFormValues)
-    const [message] = messages
-    if (message) {
-      setError(mapped, { type: 'server', message })
-    }
-  })
 }
 
 export const MedicalRecordRequestPage: React.FC = () => {
@@ -122,7 +110,7 @@ export const MedicalRecordRequestPage: React.FC = () => {
     } catch (error) {
       if (error instanceof FormApiError) {
         if (error.fieldErrors) {
-          applyFieldErrors(error.fieldErrors, setError)
+          applyServerValidationErrors(error.fieldErrors, setError, fieldNameMap)
         }
         setStatus('error')
         setStatusMessage(error.message)
