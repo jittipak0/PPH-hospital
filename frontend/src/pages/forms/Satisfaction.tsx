@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Container } from '../../components/layout/Container'
 import { PageSection } from '../../components/layout/PageSection'
 import { PageMeta } from '../../components/seo/PageMeta'
-import { formsApi, FormApiError, type ValidationErrors } from '../../lib/formsApi'
+import { formsApi, FormApiError } from '../../lib/formsApi'
+import { applyServerValidationErrors } from '../../lib/formErrors'
 import { satisfactionSurveySchema, type SatisfactionSurveyFormValues } from '../../lib/validators'
 import styles from './Forms.module.scss'
 
@@ -16,19 +17,6 @@ const fieldNameMap: Record<string, keyof SatisfactionSurveyFormValues> = {
   service_date: 'serviceDate'
 }
 
-const applyFieldErrors = (
-  errors: ValidationErrors,
-  setError: ReturnType<typeof useForm<SatisfactionSurveyFormValues>>['setError']
-) => {
-  Object.entries(errors).forEach(([field, messages]) => {
-    const mapped = fieldNameMap[field] ?? (field as keyof SatisfactionSurveyFormValues)
-    const [message] = messages
-    if (message) {
-      setError(mapped, { type: 'server', message })
-    }
-  })
-}
-
 const scoreOptions = [
   { value: 5, label: 'ดีมาก (5)' },
   { value: 4, label: 'ดี (4)' },
@@ -38,8 +26,8 @@ const scoreOptions = [
 ]
 
 const today = () => {
-  const d = new Date()
-  return d.toISOString().split('T')[0]
+  const currentDate = new Date()
+  return currentDate.toISOString().split('T')[0]
 }
 
 export const SatisfactionSurveyPage: React.FC = () => {
@@ -84,7 +72,7 @@ export const SatisfactionSurveyPage: React.FC = () => {
     } catch (error) {
       if (error instanceof FormApiError) {
         if (error.fieldErrors) {
-          applyFieldErrors(error.fieldErrors, setError)
+          applyServerValidationErrors(error.fieldErrors, setError, fieldNameMap)
         }
         setStatus('error')
         setStatusMessage(error.message)
