@@ -4,6 +4,7 @@ import { Container } from '../components/layout/Container'
 import { PageSection } from '../components/layout/PageSection'
 import { Grid } from '../components/layout/Grid'
 import { NewsList } from '../components/content/NewsList'
+import { NewsSlider } from '../components/content/NewsSlider'
 import { ArticleCard } from '../components/content/ArticleCard'
 import { DownloadWebViewButton } from '../components/common/DownloadWebViewButton'
 import { PageMeta } from '../components/seo/PageMeta'
@@ -31,6 +32,15 @@ export const Home: React.FC = () => {
   const [isStandalone, setIsStandalone] = useState(false)
 
   const news = useMemo(() => (newsData ?? []).slice(0, 4), [newsData])
+  const featuredNews = useMemo(() => {
+    const list = (newsData ?? []).filter((item) => item.isFeatured)
+    return list.sort((a, b) => {
+      if (a.displayOrder !== b.displayOrder) {
+        return a.displayOrder - b.displayOrder
+      }
+      return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+    })
+  }, [newsData])
   const articles = useMemo(() => articleData ?? [], [articleData])
   const clinics = useMemo(() => clinicData ?? [], [clinicData])
 
@@ -227,6 +237,14 @@ export const Home: React.FC = () => {
           </div>
         </Container>
       </section>
+
+      {featuredNews.length > 0 ? (
+        <section className={styles.featuredNewsSection} aria-label="ข่าวเด่นจากโรงพยาบาล">
+          <Container>
+            <NewsSlider items={featuredNews} />
+          </Container>
+        </section>
+      ) : null}
 
       <PageSection
         id="quick-links"

@@ -1,0 +1,166 @@
+.slider {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: var(--shadow-lg, 0 20px 45px rgba(15, 23, 42, 0.35));
+}
+
+.viewport {
+  position: relative;
+  min-height: 320px;
+  isolation: isolate;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 400ms ease-in-out, transform 400ms ease-in-out;
+  display: grid;
+}
+
+.slideActive {
+  opacity: 1;
+  transform: translateX(0);
+  z-index: 2;
+}
+
+.slideHidden {
+  pointer-events: none;
+  transform: translateX(-4%);
+}
+
+.slideBackground {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  filter: brightness(0.55);
+  transition: transform 700ms ease;
+}
+
+.slideActive .slideBackground {
+  transform: scale(1.02);
+}
+
+.overlay {
+  position: relative;
+  z-index: 3;
+  align-self: end;
+  padding: clamp(1.5rem, 2vw + 1rem, 3rem);
+  display: grid;
+  gap: 1rem;
+  max-width: clamp(280px, 46vw, 520px);
+}
+
+.eyebrow {
+  font-size: 0.875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.overlay h3 {
+  font-size: clamp(1.6rem, 2vw + 1rem, 2.4rem);
+  margin: 0;
+}
+
+.overlay p {
+  margin: 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.55;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.meta time {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.navButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(15, 23, 42, 0.45);
+  color: #ffffff;
+  font-size: 1.35rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 200ms ease;
+  z-index: 4;
+}
+
+.navButton:hover,
+.navButton:focus-visible {
+  background: rgba(15, 23, 42, 0.75);
+  outline: none;
+}
+
+.navPrev {
+  left: 18px;
+}
+
+.navNext {
+  right: 18px;
+}
+
+.indicators {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+}
+
+.indicator {
+  width: 34px;
+  height: 6px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: background 200ms ease;
+}
+
+.indicatorActive {
+  background: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .slider {
+    border-radius: 16px;
+  }
+
+  .viewport {
+    min-height: 280px;
+  }
+
+  .overlay {
+    max-width: none;
+    padding: 2rem 1.5rem;
+  }
+
+  .navButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .indicator {
+    width: 24px;
+  }
+}
+

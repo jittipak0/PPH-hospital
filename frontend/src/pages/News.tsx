@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Container } from '../components/layout/Container'
 import { PageSection } from '../components/layout/PageSection'
 import { NewsList } from '../components/content/NewsList'
@@ -8,6 +9,7 @@ import { api, type NewsItem } from '../lib/api'
 export const News: React.FC = () => {
   const [news, setNews] = useState<NewsItem[]>([])
   const [activeNews, setActiveNews] = useState<NewsItem | null>(null)
+  const location = useLocation() as { state?: { highlight?: string } }
 
   useEffect(() => {
     let cancelled = false
@@ -22,6 +24,17 @@ export const News: React.FC = () => {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    const highlightId = location.state?.highlight
+    if (!highlightId) {
+      return
+    }
+    const match = news.find((item) => item.id === highlightId)
+    if (match) {
+      setActiveNews(match)
+    }
+  }, [location.state, news])
 
   return (
     <div>

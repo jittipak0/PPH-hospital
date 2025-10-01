@@ -132,6 +132,11 @@
   border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
+.featuredNewsSection {
+  margin-top: -1.5rem;
+  padding-bottom: 1rem;
+}
+
 .downloadSection {
   display: grid;
   gap: 1.75rem;
@@ -327,6 +332,10 @@
   .heroStatCard {
     text-align: center;
   }
+
+  .featuredNewsSection {
+    margin-top: 0;
+  }
 }
 
 @media (max-width: 768px) {
@@ -375,4 +384,3 @@
   color: var(--color-text-muted);
   font-size: 0.95rem;
 }
-

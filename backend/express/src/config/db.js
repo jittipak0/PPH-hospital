@@ -66,6 +66,19 @@ db.exec(`
   );
 `)
 
+const ensureNewsColumn = (columnName, definition) => {
+  const columns = db.prepare('PRAGMA table_info(news)').all()
+  const hasColumn = columns.some((column) => column.name === columnName)
+  if (!hasColumn) {
+    db.exec(`ALTER TABLE news ADD COLUMN ${columnName} ${definition}`)
+  }
+}
+
+ensureNewsColumn('summary', "TEXT DEFAULT ''")
+ensureNewsColumn('imageUrl', "TEXT DEFAULT ''")
+ensureNewsColumn('isFeatured', 'INTEGER NOT NULL DEFAULT 0')
+ensureNewsColumn('displayOrder', 'INTEGER NOT NULL DEFAULT 0')
+
 const seedDefaultUsers = () => {
   const count = db.prepare('SELECT COUNT(*) as total FROM users').get()
   if (count.total > 0) {
@@ -109,18 +122,39 @@ const seedDefaultUsers = () => {
     insertSchedule.run(uuidv4(), nurseId, new Date(Date.now() + 86400000).toISOString().split('T')[0], 'Night Shift')
   }
 
-  const insertNews = db.prepare('INSERT INTO news (id, title, content, publishedAt) VALUES (?, ?, ?, ?)')
-  insertNews.run(
-    uuidv4(),
-    'ประกาศการซ้อมแผนอัคคีภัย',
-    'บุคลากรทุกคนโปรดเข้าร่วมการซ้อมแผนอัคคีภัยในวันศุกร์นี้ เวลา 14:00 น.',
-    timestamp
+  const insertNews = db.prepare(
+    `INSERT INTO news (id, title, summary, content, imageUrl, publishedAt, isFeatured, displayOrder)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   )
   insertNews.run(
     uuidv4(),
-    'ปรับปรุงระบบห้องยา',
-    'ระบบจัดเก็บยาใหม่จะเริ่มใช้งานตั้งแต่สัปดาห์หน้า โปรดศึกษาคู่มือก่อนใช้งานจริง',
-    timestamp
+    'ประกาศซ้อมแผนอัคคีภัยประจำปี',
+    'เชิญบุคลากรร่วมซ้อมแผนอพยพและใช้อุปกรณ์ดับเพลิงวันศุกร์นี้ที่อาคารผู้ป่วยนอก',
+    'บุคลากรทุกคนโปรดเข้าร่วมการซ้อมแผนอัคคีภัยในวันศุกร์นี้ เวลา 14:00 น. ณ ลานอเนกประสงค์อาคารผู้ป่วยนอก โดยมีการสาธิตใช้งานอุปกรณ์ดับเพลิงและซ้อมอพยพผู้ป่วย รวมถึงทบทวนเส้นทางหลบหนีอย่างปลอดภัย',
+    'https://images.unsplash.com/photo-1522845015754-513f09fb13b6',
+    timestamp,
+    1,
+    1
+  )
+  insertNews.run(
+    uuidv4(),
+    'ระบบจัดเก็บยาอัจฉริยะพร้อมใช้งาน',
+    'ห้องยาปรับระบบจัดเก็บยาใหม่ เพิ่มความปลอดภัยและความรวดเร็วในการจ่ายยา',
+    'ระบบจัดเก็บยารูปแบบใหม่จะเริ่มใช้งานตั้งแต่สัปดาห์หน้า โปรดศึกษาคู่มือและเข้าร่วมการอบรมออนไลน์ก่อนใช้งานจริง เพื่อให้การเบิกจ่ายยาเป็นไปอย่างปลอดภัยและมีประสิทธิภาพ',
+    'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b',
+    timestamp,
+    1,
+    2
+  )
+  insertNews.run(
+    uuidv4(),
+    'กติกาความปลอดภัยไซเบอร์ฉบับใหม่',
+    'ประกาศมาตรการด้านไซเบอร์ใหม่สำหรับการใช้อีเมลและระบบเวชระเบียนอิเล็กทรอนิกส์',
+    'นโยบายความปลอดภัยไซเบอร์ฉบับปรับปรุงมีผลทันที ผู้ใช้งานต้องเปิดใช้การยืนยันตัวตนสองขั้นตอน และห้ามนำข้อมูลคนไข้ออกนอกระบบโดยไม่ได้รับอนุญาต รายละเอียดเพิ่มเติมศึกษาจากเอกสารแนบและเข้าร่วมสัมมนาออนไลน์',
+    'https://images.unsplash.com/photo-1556740758-90de374c12ad',
+    timestamp,
+    0,
+    0
   )
 }
 
