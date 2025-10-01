@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { BrowserRouter } from 'react-router-dom'
-import { Navbar } from './components/common/Navbar'
+import { Sidebar } from './components/common/Sidebar'
 import { Footer } from './components/common/Footer'
 import { CookieConsent } from './components/common/CookieConsent'
 import { AppRoutes } from './router'
@@ -24,16 +24,20 @@ export default function App(): React.ReactElement {
 
   return (
     <BrowserRouter>
-      <Navbar
-        onIncreaseFont={increaseFont}
-        onDecreaseFont={decreaseFont}
-        isHighContrast={isHighContrast}
-        onToggleContrast={() => setIsHighContrast((prev) => !prev)}
-      />
-      <main>
-        <AppRoutes />
-      </main>
-      <Footer />
+      <div className="app-shell">
+        <Sidebar
+          onIncreaseFont={increaseFont}
+          onDecreaseFont={decreaseFont}
+          isHighContrast={isHighContrast}
+          onToggleContrast={() => setIsHighContrast((prev) => !prev)}
+        />
+        <div className="app-content">
+          <main className="app-main">
+            <AppRoutes />
+          </main>
+          <Footer />
+        </div>
+      </div>
       <CookieConsent />
     </BrowserRouter>
   )

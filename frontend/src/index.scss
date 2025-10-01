@@ -55,8 +55,25 @@ button {
   border: 0;
 }
 
-main {
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  background: var(--color-background);
+}
+
+.app-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--color-background);
+}
+
+.app-main {
+  flex: 1;
   min-height: 60vh;
+  padding: clamp(1.2rem, 1.8vw + 1rem, 2.6rem);
 }
 
 .btn {
@@ -116,8 +133,22 @@ main {
   gap: 1.75rem;
 }
 
+@media (max-width: 959px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .app-main {
+    padding: 1.2rem 1rem 1.8rem;
+  }
+}
+
 @media (max-width: 768px) {
   :root {
     --font-scale: 1;
+  }
+
+  .app-main {
+    padding: 1rem 0.85rem 1.5rem;
   }
 }
