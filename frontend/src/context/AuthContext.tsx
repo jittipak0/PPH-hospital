@@ -13,7 +13,12 @@ type AuthContextValue = {
   refreshToken: string | null
   isAuthenticated: boolean
   error: string | null
-  login: (payload: { username: string; password: string; acceptPolicies: boolean }) => Promise<void>
+  login: (payload: {
+    username: string
+    password: string
+    acceptPolicies: boolean
+    rememberMe: boolean
+  }) => Promise<void>
   logout: () => Promise<void>
   refresh: () => Promise<void>
   clearError: () => void
@@ -34,6 +39,15 @@ const loadInitialState = (): AuthState => {
       return initialState
     }
     const parsed = JSON.parse(raw) as AuthState
+    if (parsed.user) {
+      parsed.user = {
+        ...parsed.user,
+        cid: parsed.user.cid ?? null,
+        fullName: parsed.user.fullName ?? parsed.user.username,
+        department: parsed.user.department ?? null,
+        lastLoginAt: parsed.user.lastLoginAt ?? null
+      }
+    }
     return parsed
   } catch (error) {
     console.warn('Failed to parse auth state from sessionStorage', error)
@@ -59,17 +73,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearError = useCallback(() => setError(null), [])
 
-  const login = useCallback(async (payload: { username: string; password: string; acceptPolicies: boolean }) => {
-    try {
-      clearError()
-      const response = await secureApi.login(payload)
-      persistState({ user: response.user, accessToken: response.accessToken, refreshToken: response.refreshToken })
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'ไม่สามารถเข้าสู่ระบบได้'
-      setError(message)
-      throw err
-    }
-  }, [clearError, persistState])
+  const login = useCallback(
+    async (payload: { username: string; password: string; acceptPolicies: boolean; rememberMe: boolean }) => {
+      try {
+        clearError()
+        const response = await secureApi.login(payload)
+        persistState({ user: response.user, accessToken: response.accessToken, refreshToken: response.refreshToken })
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'ไม่สามารถเข้าสู่ระบบได้'
+        setError(message)
+        throw err
+      }
+    },
+    [clearError, persistState]
+  )
 
   const logout = useCallback(async () => {
     try {

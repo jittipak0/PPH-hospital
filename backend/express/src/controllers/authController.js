@@ -4,7 +4,7 @@ const env = require('../config/env')
 
 const login = async (req, res, next) => {
   try {
-    const { username, password, acceptPolicies } = req.validatedBody
+    const { username, password, acceptPolicies, rememberMe } = req.validatedBody
     const result = await authService.login({ username, password, acceptPolicies, ip: req.ip })
     const maxAge = parseDuration(env.refreshTokenExpiry)
     res.cookie('refreshToken', result.refreshToken, {
@@ -13,6 +13,15 @@ const login = async (req, res, next) => {
       secure: true,
       maxAge
     })
+    if (rememberMe && result.user.cid) {
+      res.cookie('ccid', result.user.cid, {
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        sameSite: 'lax',
+        path: '/'
+      })
+    } else {
+      res.clearCookie('ccid', { path: '/' })
+    }
     return res.json(result)
   } catch (error) {
     if (error.code === 'POLICY_ACCEPTANCE_REQUIRED') {
@@ -50,6 +59,7 @@ const logout = (req, res, next) => {
     }
     const response = authService.logout({ refreshToken, userId: req.user?.id, ip: req.ip })
     res.clearCookie('refreshToken')
+    res.clearCookie('ccid', { path: '/' })
     return res.json(response)
   } catch (error) {
     return next(error)
