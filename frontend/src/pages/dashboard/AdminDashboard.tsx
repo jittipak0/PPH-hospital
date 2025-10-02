@@ -102,8 +102,10 @@ export const AdminDashboard: React.FC = () => {
           <table>
             <thead>
               <tr>
+                <th>ชื่อ-นามสกุล</th>
                 <th>ชื่อผู้ใช้</th>
                 <th>บทบาท</th>
+                <th>หน่วยงาน</th>
                 <th>สถานะนโยบาย</th>
                 <th></th>
               </tr>
@@ -111,8 +113,10 @@ export const AdminDashboard: React.FC = () => {
             <tbody>
               {users.map((user) => (
                 <tr key={user.id}>
+                  <td>{user.fullName}</td>
                   <td>{user.username}</td>
                   <td>{user.role}</td>
+                  <td>{user.department ?? '-'}</td>
                   <td>{user.acceptedPolicies ? 'ยอมรับแล้ว' : 'ยังไม่ยอมรับ'}</td>
                   <td>
                     <button className="danger" onClick={() => handleDelete(user.id)}>

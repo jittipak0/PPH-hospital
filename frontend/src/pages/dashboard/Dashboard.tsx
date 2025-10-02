@@ -75,7 +75,10 @@ export const DashboardPage: React.FC = () => {
         <div>
           <h1>แดชบอร์ดบุคลากร</h1>
           <p>
-            สวัสดี {user.username} (บทบาท: {user.role})
+            สวัสดี {user.fullName} ({user.username})
+          </p>
+          <p>
+            บทบาท: {user.role} {user.department ? `| แผนก: ${user.department}` : ''}
           </p>
         </div>
         <button className="dashboard__logout" onClick={logout}>

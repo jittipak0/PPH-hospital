@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 export const Login: React.FC = () => {
   const { login, isAuthenticated, error, clearError } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ username: '', password: '', acceptPolicies: false })
+  const [form, setForm] = useState({ username: '', password: '', acceptPolicies: false, rememberMe: false })
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -68,8 +68,16 @@ export const Login: React.FC = () => {
               value={form.password}
               onChange={handleChange}
               required
-              minLength={4}
             />
+          </label>
+          <label className="secure-login__checkbox">
+            <input
+              type="checkbox"
+              name="rememberMe"
+              checked={form.rememberMe}
+              onChange={handleChange}
+            />
+            <span>จำฉันไว้ในอุปกรณ์นี้</span>
           </label>
           <label className="secure-login__checkbox">
             <input

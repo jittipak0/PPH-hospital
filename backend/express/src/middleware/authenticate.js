@@ -21,7 +21,11 @@ const authenticate = (req, res, next) => {
       id: user.id,
       username: user.username,
       role: user.role,
-      acceptedPolicies: Boolean(user.acceptedPolicies)
+      acceptedPolicies: Boolean(user.acceptedPolicies),
+      cid: user.cid ?? null,
+      fullName: user.fullName ?? user.username,
+      department: user.department ?? null,
+      lastLoginAt: user.lastLoginAt ?? null
     }
 
     logActivity({ userId: user.id, action: 'ACCESS', ip: req.ip })

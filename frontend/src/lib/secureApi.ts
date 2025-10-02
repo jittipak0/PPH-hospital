@@ -7,6 +7,10 @@ export type AuthenticatedUser = {
   username: string
   role: Role
   acceptedPolicies: boolean
+  cid: string | null
+  fullName: string
+  department: string | null
+  lastLoginAt: string | null
 }
 
 export type LoginResponse = {
@@ -86,7 +90,12 @@ const request = async <T>(path: string, options: RequestOptions = {}): Promise<T
 }
 
 export const secureApi = {
-  async login(payload: { username: string; password: string; acceptPolicies: boolean }): Promise<LoginResponse> {
+  async login(payload: {
+    username: string
+    password: string
+    acceptPolicies: boolean
+    rememberMe: boolean
+  }): Promise<LoginResponse> {
     return request<LoginResponse>('/auth/login', { method: 'POST', body: payload, csrf: true })
   },
   async refresh(refreshToken: string): Promise<LoginResponse> {
