@@ -1,35 +1,46 @@
-const bcrypt = require('bcryptjs')
 const userModel = require('../models/userModel')
 const sessionModel = require('../models/sessionModel')
+const personnelModel = require('../models/personnelModel')
 const { generateAccessToken, generateRefreshToken } = require('../utils/token')
 const { logActivity } = require('../utils/logger')
 
 const login = async ({ username, password, acceptPolicies = false, ip }) => {
-  const user = userModel.findByUsername(username)
-  if (!user) {
-    const error = new Error('Invalid username or password')
+  let personnel
+  try {
+    personnel = await personnelModel.authenticate({ username, password })
+  } catch (error) {
+    console.error('Failed to connect to HOSxP database', error)
+    const err = new Error('ไม่สามารถเชื่อมต่อฐานข้อมูลบุคลากรได้')
+    err.status = 503
+    throw err
+  }
+
+  if (!personnel) {
+    const error = new Error('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
     error.status = 401
     throw error
   }
 
-  const isValidPassword = await bcrypt.compare(password, user.password)
-  if (!isValidPassword) {
-    const error = new Error('Invalid username or password')
-    error.status = 401
-    throw error
-  }
+  const syncedUser = userModel.upsertPersonnelUser({
+    username: personnel.username || username,
+    cid: personnel.cid,
+    fullName: personnel.fullName,
+    department: personnel.department,
+    role: personnel.role
+  })
 
-  if (!user.acceptedPolicies) {
+  if (!syncedUser.acceptedPolicies) {
     if (!acceptPolicies) {
-      const error = new Error('Privacy policy must be accepted before access is granted')
+      const error = new Error('จำเป็นต้องยอมรับนโยบายความเป็นส่วนตัวก่อนเข้าใช้งาน')
       error.status = 412
       error.code = 'POLICY_ACCEPTANCE_REQUIRED'
       throw error
     }
-    userModel.acceptPolicies(user.id)
+    userModel.acceptPolicies(syncedUser.id)
   }
 
-  const hydrated = userModel.findById(user.id)
+  userModel.updateLastLogin(syncedUser.id)
+  const hydrated = userModel.findById(syncedUser.id)
   const accessToken = generateAccessToken(hydrated)
   const { token: refreshToken, hashed, expiresAt } = generateRefreshToken()
   sessionModel.createSession({ userId: hydrated.id, refreshTokenHash: hashed, expiresAt })
@@ -39,12 +50,7 @@ const login = async ({ username, password, acceptPolicies = false, ip }) => {
   return {
     accessToken,
     refreshToken,
-    user: {
-      id: hydrated.id,
-      username: hydrated.username,
-      role: hydrated.role,
-      acceptedPolicies: Boolean(hydrated.acceptedPolicies)
-    }
+    user: formatUserPayload(hydrated)
   }
 }
 
@@ -82,12 +88,7 @@ const refreshTokens = ({ refreshToken, ip }) => {
   return {
     accessToken,
     refreshToken: newToken,
-    user: {
-      id: user.id,
-      username: user.username,
-      role: user.role,
-      acceptedPolicies: Boolean(user.acceptedPolicies)
-    }
+    user: formatUserPayload(user)
   }
 }
 
@@ -98,5 +99,16 @@ const logout = ({ refreshToken, userId, ip }) => {
   }
   return { success: true }
 }
+
+const formatUserPayload = (user) => ({
+  id: user.id,
+  username: user.username,
+  role: user.role,
+  acceptedPolicies: Boolean(user.acceptedPolicies),
+  cid: user.cid ?? null,
+  fullName: user.fullName ?? user.username,
+  department: user.department ?? null,
+  lastLoginAt: user.lastLoginAt ?? null
+})
 
 module.exports = { login, refreshTokens, logout }

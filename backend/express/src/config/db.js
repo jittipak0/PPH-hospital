@@ -19,6 +19,10 @@ db.exec(`
     password TEXT NOT NULL,
     role TEXT NOT NULL,
     acceptedPolicies INTEGER DEFAULT 0,
+    cid TEXT,
+    fullName TEXT,
+    department TEXT,
+    lastLoginAt TEXT,
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL
   );
@@ -66,6 +70,14 @@ db.exec(`
   );
 `)
 
+const ensureTableColumn = (table, columnName, definition) => {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all()
+  const hasColumn = columns.some((column) => column.name === columnName)
+  if (!hasColumn) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${columnName} ${definition}`)
+  }
+}
+
 const ensureNewsColumn = (columnName, definition) => {
   const columns = db.prepare('PRAGMA table_info(news)').all()
   const hasColumn = columns.some((column) => column.name === columnName)
@@ -78,6 +90,11 @@ ensureNewsColumn('summary', "TEXT DEFAULT ''")
 ensureNewsColumn('imageUrl', "TEXT DEFAULT ''")
 ensureNewsColumn('isFeatured', 'INTEGER NOT NULL DEFAULT 0')
 ensureNewsColumn('displayOrder', 'INTEGER NOT NULL DEFAULT 0')
+
+ensureTableColumn('users', 'cid', 'TEXT')
+ensureTableColumn('users', 'fullName', 'TEXT')
+ensureTableColumn('users', 'department', 'TEXT')
+ensureTableColumn('users', 'lastLoginAt', 'TEXT')
 
 const seedDefaultUsers = () => {
   const count = db.prepare('SELECT COUNT(*) as total FROM users').get()
@@ -95,11 +112,24 @@ const seedDefaultUsers = () => {
   const passwordHash = bcrypt.hashSync('Password123!', 10)
 
   const insertUser = db.prepare(
-    'INSERT INTO users (id, username, password, role, acceptedPolicies, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    `INSERT INTO users (id, username, password, role, acceptedPolicies, cid, fullName, department, lastLoginAt, createdAt, updatedAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
 
   for (const roleData of roles) {
-    insertUser.run(uuidv4(), roleData.username, passwordHash, roleData.role, 0, timestamp, timestamp)
+    insertUser.run(
+      uuidv4(),
+      roleData.username,
+      passwordHash,
+      roleData.role,
+      0,
+      null,
+      null,
+      null,
+      null,
+      timestamp,
+      timestamp
+    )
   }
 
   // Seed demo data for domain specific tables
