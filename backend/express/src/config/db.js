@@ -32,6 +32,16 @@ db.exec(`
     FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS remember_tokens (
+    id TEXT PRIMARY KEY,
+    userId TEXT NOT NULL,
+    tokenHash TEXT NOT NULL,
+    expiresAt TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL,
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+  );
+
   CREATE TABLE IF NOT EXISTS patients (
     id TEXT PRIMARY KEY,
     doctorId TEXT NOT NULL,

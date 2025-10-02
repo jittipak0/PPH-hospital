@@ -18,5 +18,7 @@ module.exports = {
   jwtSecret: process.env.JWT_SECRET || 'change-me-in-production',
   tokenExpiry: process.env.TOKEN_EXPIRY || '15m',
   refreshTokenExpiry: process.env.REFRESH_TOKEN_EXPIRY || '7d',
+  rememberTokenExpiry: process.env.REMEMBER_TOKEN_EXPIRY || '30d',
+  rememberTokenCookieName: process.env.REMEMBER_ME_COOKIE_NAME || 'rememberMe',
   dbUrl: process.env.DB_URL || 'sqlite:./src/data/hospital.db'
 }

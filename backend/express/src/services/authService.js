@@ -1,10 +1,13 @@
 const bcrypt = require('bcryptjs')
 const userModel = require('../models/userModel')
 const sessionModel = require('../models/sessionModel')
+const rememberTokenModel = require('../models/rememberTokenModel')
 const { generateAccessToken, generateRefreshToken } = require('../utils/token')
 const { logActivity } = require('../utils/logger')
+const { addDurationToNow } = require('../utils/time')
+const env = require('../config/env')
 
-const login = async ({ username, password, acceptPolicies = false, ip }) => {
+const login = async ({ username, password, acceptPolicies = false, rememberMe = false, ip }) => {
   const user = userModel.findByUsername(username)
   if (!user) {
     const error = new Error('Invalid username or password')
@@ -34,11 +37,19 @@ const login = async ({ username, password, acceptPolicies = false, ip }) => {
   const { token: refreshToken, hashed, expiresAt } = generateRefreshToken()
   sessionModel.createSession({ userId: hydrated.id, refreshTokenHash: hashed, expiresAt })
 
+  let rememberMeToken
+  if (rememberMe) {
+    const rememberExpiresAt = addDurationToNow(env.rememberTokenExpiry)
+    const tokenRecord = rememberTokenModel.createToken({ userId: hydrated.id, expiresAt: rememberExpiresAt })
+    rememberMeToken = tokenRecord.token
+  }
+
   logActivity({ userId: hydrated.id, action: 'LOGIN', ip })
 
   return {
     accessToken,
     refreshToken,
+    rememberMeToken,
     user: {
       id: hydrated.id,
       username: hydrated.username,
@@ -91,8 +102,13 @@ const refreshTokens = ({ refreshToken, ip }) => {
   }
 }
 
-const logout = ({ refreshToken, userId, ip }) => {
-  sessionModel.deleteSessionByToken(refreshToken)
+const logout = ({ refreshToken, rememberToken, userId, ip }) => {
+  if (refreshToken) {
+    sessionModel.deleteSessionByToken(refreshToken)
+  }
+  if (rememberToken) {
+    rememberTokenModel.deleteByToken(rememberToken)
+  }
   if (userId) {
     logActivity({ userId, action: 'LOGOUT', ip })
   }

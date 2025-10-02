@@ -7,6 +7,7 @@ const routes = require('./routes')
 const sanitizeRequest = require('./middleware/sanitize')
 const csrfProtection = require('./middleware/csrf')
 const errorHandler = require('./middleware/errorHandler')
+const rememberMe = require('./middleware/rememberMe')
 
 const app = express()
 
@@ -21,6 +22,7 @@ app.use(
 app.use(express.json({ limit: '10kb' }))
 app.use(cookieParser())
 app.use(morgan('combined'))
+app.use(rememberMe)
 app.use(sanitizeRequest)
 app.use(csrfProtection)
 

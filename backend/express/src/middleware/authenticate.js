@@ -3,6 +3,10 @@ const userModel = require('../models/userModel')
 const { logActivity } = require('../utils/logger')
 
 const authenticate = (req, res, next) => {
+  if (req.user) {
+    return next()
+  }
+
   const header = req.headers.authorization
   if (!header || !header.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Authentication required' })
