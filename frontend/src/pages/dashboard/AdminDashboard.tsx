@@ -78,7 +78,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
           <div>
             <label>รหัสผ่านชั่วคราว</label>
-            <input name="password" type="password" value={form.password} onChange={handleChange} required minLength={8} />
+            <input name="password" type="password" value={form.password} onChange={handleChange} required minLength={4} />
           </div>
           <div>
             <label>บทบาท</label>

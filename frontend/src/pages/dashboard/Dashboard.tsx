@@ -96,7 +96,7 @@ export const DashboardPage: React.FC = () => {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 required
-                minLength={8}
+                minLength={4}
               />
             </label>
             <button type="submit" disabled={confirming}>

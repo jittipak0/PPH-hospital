@@ -12,9 +12,15 @@ const app = express()
 
 app.disable('x-powered-by')
 app.use(helmet())
+const defaultOrigins = ['http://localhost:5173', 'http://localhost:4173']
+const envOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
+  : []
+const allowedOrigins = envOrigins.length > 0 ? envOrigins : defaultOrigins
+
 app.use(
   cors({
-    origin: ['http://localhost:5173'],
+    origin: allowedOrigins,
     credentials: true
   })
 )

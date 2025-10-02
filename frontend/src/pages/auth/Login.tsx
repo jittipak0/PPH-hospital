@@ -68,7 +68,7 @@ export const Login: React.FC = () => {
               value={form.password}
               onChange={handleChange}
               required
-              minLength={8}
+              minLength={4}
             />
           </label>
           <label className="secure-login__checkbox">
