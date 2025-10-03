@@ -1,6 +1,6 @@
 # Hospital Full Starter v2
 
-ชุดโค้ดนี้ปรับ backend Laravel ให้รองรับสถาปัตยกรรม Hexagonal (Ports & Adapters) และสามารถสลับการเชื่อมต่อฐานข้อมูลได้ทันทีผ่านไฟล์คอนฟิกหรือ `.env` โดยไม่กระทบ API ที่มีอยู่ (เช่น `/api/health`). เอกสารเชิงลึกอยู่ในโฟลเดอร์ [`docs/`](docs/).
+ชุดโค้ดนี้ปรับ backend Laravel ให้รองรับสถาปัตยกรรม Hexagonal (Ports & Adapters) และสามารถสลับการเชื่อมต่อฐานข้อมูลได้ทันทีผ่านไฟล์คอนฟิกหรือ `.env` โดยไม่กระทบ API ที่มีอยู่ (เช่น `/api/health`). หากต้องการเริ่มต้นแบบรวดเร็วโดยไม่ใช้ Laravel สามารถเลือกโฟลเดอร์ [`backend/simple-api`](backend/simple-api) ซึ่งเป็น Express เวอร์ชันย่อพร้อม health check, ข่าว และฟอร์มตัวอย่างได้เลย. เอกสารเชิงลึกอยู่ในโฟลเดอร์ [`docs/`](docs/).
 
 ## ภาพรวมสถาปัตยกรรม Backend
 - **Domain** – กำหนดสัญญา (Port) และ Entity ที่ไม่พึ่งพา Laravel เช่น `App\Domain\User\Contracts\UserRepository` และ `App\Domain\User\Entities\User`.

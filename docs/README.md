@@ -4,7 +4,10 @@
 
 ## เทคโนโลยีและเครื่องมือหลัก
 - **Frontend:** React 18 + Vite (ESM) พร้อมตัวอย่างการเรียก API ผ่าน fetch
-- **Backend:** Express.js 4 (JWT + RBAC + CSRF) อยู่ในโฟลเดอร์ `backend/express` พร้อมบริการล็อกอิน/จัดการข่าวสาร; โฟลเดอร์ `backend/src-snippets` ยังคงเก็บตัวอย่าง Laravel สำหรับใช้ต่อยอด
+- **Backend:**
+  - โครงเต็ม Express.js 4 (JWT + RBAC + CSRF) อยู่ในโฟลเดอร์ `backend/express` พร้อมบริการล็อกอิน/จัดการข่าวสาร
+  - ตัวเลือกแบบง่ายสำหรับทีมที่เพิ่งเริ่มต้นอยู่ใน `backend/simple-api` ให้เพียง health check, ข่าว และฟอร์มตัวอย่าง พร้อมระบบ CSRF แบบเบื้องต้น
+  - โฟลเดอร์ `backend/src-snippets` ยังคงเก็บตัวอย่าง Laravel สำหรับใช้ต่อยอด
 - **ฐานข้อมูล:** MySQL หรือ MariaDB
 - **เว็บเซิร์ฟเวอร์:** Nginx + PHP-FPM (ตัวอย่างไฟล์คอนฟิกในโฟลเดอร์ `nginx/`)
 - **CI/CD:** ตัวอย่าง workflow บน GitHub Actions (frontend build/test + backend PHPUnit บน SQLite in-memory)
