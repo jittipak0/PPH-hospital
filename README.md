@@ -37,6 +37,7 @@
    docker compose exec backend composer install
    docker compose exec backend php artisan key:generate
    docker compose exec backend php artisan migrate --force
+   docker compose exec backend php artisan db:seed --force
    ```
 9. **ติดตั้ง dependency สำหรับ frontend**
    ```bash
@@ -66,6 +67,7 @@
 cd backend
 composer install
 php artisan migrate --force                # เมื่อใช้ driver = eloquent
+php artisan db:seed --force                # สร้าง admin และข่าว dev (local/testing)
 php artisan test                           # หรือ vendor/bin/phpunit
 ```
 - ทดสอบเฉพาะสัญญา repository: `php artisan test --testsuite=Integration`

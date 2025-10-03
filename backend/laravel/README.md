@@ -10,6 +10,7 @@ cp .env.example .env
 composer install
 php artisan key:generate
 php artisan migrate        # เมื่อใช้ driver = eloquent
+php artisan db:seed        # สร้าง admin และข่าวตัวอย่าง (เฉพาะ local/testing)
 php artisan vendor:publish --provider="Laravel\\Sanctum\\SanctumServiceProvider"
 ```
 
@@ -18,6 +19,7 @@ php artisan vendor:publish --provider="Laravel\\Sanctum\\SanctumServiceProvider"
 - `DATASTORE_CONNECTION` = alias ใน `config/database.php`
 - `SANCTUM_STATEFUL_DOMAINS` = โดเมนที่แชร์ cookie กับ SPA
 - `RATE_LIMIT_PUBLIC`, `RATE_LIMIT_STAFF`, `RATE_LIMIT_AUTH_LOGIN_ATTEMPTS`, `RATE_LIMIT_AUTH_LOGIN_DECAY`
+- `ADMIN_INITIAL_USERNAME`, `ADMIN_INITIAL_NAME`, `ADMIN_INITIAL_EMAIL`, `ADMIN_INITIAL_PASSWORD`
 
 ## การรันและตรวจสอบ
 
@@ -97,6 +99,7 @@ DATASTORE_DRIVER=memory
 DATASTORE_DRIVER=eloquent
 DATASTORE_CONNECTION=sqlite
 php artisan migrate --force
+php artisan db:seed --force
 ```
 
 ## Troubleshooting

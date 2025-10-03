@@ -19,6 +19,10 @@
 | DB_DATABASE | ชื่อฐานข้อมูล | `hospital` | สร้างก่อน migrate |
 | DB_USERNAME | ผู้ใช้ฐานข้อมูล | `hospital_app` | จำกัดสิทธิ์เฉพาะ CRUD |
 | DB_PASSWORD | รหัสผ่านฐานข้อมูล | `********` | เก็บใน secret manager |
+| ADMIN_INITIAL_USERNAME | Username เริ่มต้นของ admin | `admin` | ใช้โดย seeder `AdminUserSeeder` |
+| ADMIN_INITIAL_NAME | ชื่อที่แสดงของ admin | `System Administrator` | |
+| ADMIN_INITIAL_EMAIL | อีเมลผู้ดูแลระบบ | `admin@example.com` | ใช้สำหรับแจ้งเตือน |
+| ADMIN_INITIAL_PASSWORD | รหัสผ่านเริ่มต้นของ admin | `ChangeMe123!` | เปลี่ยนทันทีหลัง deploy |
 | SANCTUM_STATEFUL_DOMAINS | รายการโดเมนที่แชร์ cookie | `hospital.local,localhost` | จำเป็นเมื่อ frontend ใช้ cookie-based auth |
 | RATE_LIMIT_PUBLIC | เพดานคำขอสาธารณะ (requests/min/ip) | `60` | ใช้กับ endpoint สาธารณะทุกตัว |
 | RATE_LIMIT_STAFF | เพดานคำขอฝั่ง staff (requests/min/user) | `120` | ใช้กับ route ที่ต้อง auth:sanctum |
