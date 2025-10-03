@@ -11,6 +11,9 @@ backend/express/.env
 backend/express/logs/
 backend/express/src/data/*.db
 
+# Simple Express backend
+backend/simple-api/node_modules/
+
 # React frontend
 frontend/.env.development
 frontend/node_modules/
