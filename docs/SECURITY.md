@@ -1,63 +1,76 @@
-﻿# SECURITY.md – แนวปฏิบัติด้านความปลอดภัยของแพลตฟอร์ม
+# SECURITY.md – แนวปฏิบัติด้านความปลอดภัยของแพลตฟอร์ม
 
-ข้อมูลที่เกี่ยวข้องกับสถานพยาบาลถือเป็นข้อมูลอ่อนไหวสูง เอกสารนี้สรุปมาตรการพื้นฐานที่ทุกทีมต้องปฏิบัติ รวมถึงรายการตรวจสอบที่ต้องทำอย่างสม่ำเสมอ โปรดอัปเดตเมื่อมีนโยบายหรือเครื่องมือใหม่
+ระบบนี้ให้บริการฟอร์มสาธารณะและพื้นที่ทำงานสำหรับบุคลากร จึงต้องควบคุมทั้ง CSRF, การอัปโหลดไฟล์, อัตราการเรียก และการจัดการ token อย่างรัดกุม เอกสารนี้สรุปนโยบายล่าสุดที่ทีมต้องปฏิบัติตาม
 
 ## 1. แอปพลิเคชันและโค้ด
-- ใช้ HTTPS ทุกสภาพแวดล้อม พร้อมเปิด HSTS (Strict-Transport-Security)
-- กำหนด Security Header ผ่าน Nginx: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Content-Security-Policy`
-- ปิด `APP_DEBUG` ใน production และไม่ส่ง stack trace กลับไปยังผู้ใช้
-- ตรวจสอบ input ทุกจุดด้วย Laravel Form Request + escape output ใน frontend เพื่อป้องกัน XSS/SQL Injection
-- ใช้ Sanctum token abilities (`viewer`, `staff`, `admin`) และตรวจสอบสิทธิ์ใน policy/service ทุกครั้ง
-- กำหนด Sanctum token abilities (`viewer`, `staff`, `admin`) ผ่าน service container และอ้างอิงเฉพาะความสามารถที่จำเป็นในแต่ละ route
-- เปิด rate limit สำหรับ endpoint สำคัญ (ค่าเริ่มต้น: `RATE_LIMIT_PUBLIC=60`, `RATE_LIMIT_STAFF=120`, `RATE_LIMIT_AUTH_LOGIN_ATTEMPTS=20`/`RATE_LIMIT_AUTH_LOGIN_DECAY=5`)
-- จัดการไฟล์อัปโหลด: ตรวจ MIME/ขนาดไฟล์ เก็บนอก webroot และสแกนไวรัสก่อนให้ดาวน์โหลด
-- ฟอร์มสาธารณะ (เวชระเบียน/บริจาค/ประเมิน/Health Rider) ต้องเรียก CSRF token ก่อนส่ง, ตรวจสอบ `X-Requested-With`, และใช้ rate limit `throttle:public-api`
-- จัดการ dependency ด้วย Dependabot/Renovate และตรวจสอบช่องโหว่ผ่าน `npm audit` / `composer audit`
+- ใช้ HTTPS ทุกสภาพแวดล้อม พร้อมเปิด HSTS บน reverse proxy
+- ปิด `APP_DEBUG` ใน production และใช้ exception handler ที่ส่งข้อความ generic ให้ผู้ใช้ (log รายละเอียดไว้ที่ server เท่านั้น)
+- ทุก endpoint ใช้ Laravel Form Request ตรวจสอบ input และ resource จัดรูปแบบ response เพื่อลดข้อมูลเกินจำเป็น
+- เปิดใช้ Sanctum personal access token พร้อม abilities: `viewer`, `staff`, `admin`
+  - `/api/news` ใช้งานได้โดยไม่ต้องมี token
+  - `/api/staff/news` ต้องมี ability `staff`
+  - เขียน/แก้/ลบข่าวต้องมี ability `admin`
+- ตรวจสอบสิทธิ์ด้วย middleware `abilities:<name>` เสมอเพื่อกัน token ที่ถูกยกระดับโดยไม่ตั้งใจ
+- เปิด rate limit ตาม ENV: `RATE_LIMIT_PUBLIC`, `RATE_LIMIT_STAFF`, `RATE_LIMIT_AUTH_LOGIN_ATTEMPTS`/`RATE_LIMIT_AUTH_LOGIN_DECAY`
+- Dependency ทั้งหมดต้องอัปเดตผ่าน Dependabot/Renovate และตรวจ `composer audit` ทุกเดือน
 
-## 2. ข้อมูลและความเป็นส่วนตัว
-- เก็บข้อมูลส่วนบุคคลตามหลักการ minimized: เก็บเท่าที่จำเป็น
-- เข้ารหัสข้อมูลอ่อนไหว (เช่น หมายเลขเวชระเบียน) ด้วย `Crypt::encrypt` หรือ column encryption
-- หมายเลขบัตรประชาชนที่รับผ่านฟอร์มเวชระเบียนให้แฮชด้วย SHA-256 + APP_KEY และเก็บเฉพาะค่า mask ที่แสดงได้ (`1234*******23`)
-- แยกสิทธิ์การเข้าถึงข้อมูลตามบทบาทในฐานข้อมูล (database user แยกสำหรับ read/write) และจำกัดสิทธิ์ service account ให้มีเพียง CRUD ตามที่ API ต้องการ
-- หมุนรหัสผ่าน/secret ของ service account อย่างน้อยทุก 90 วัน หรือทันทีที่มีเหตุสงสัยว่าจะรั่วไหล พร้อมอัปเดต secret manager
-- บันทึกการเข้าถึงข้อมูลสำคัญ (audit trail) เพื่อรองรับการตรวจสอบย้อนหลัง
-- กำหนดนโยบาย retention และลบข้อมูลที่หมดอายุหรือไม่ได้ใช้งาน
-- CSRF สำหรับ public forms และ auth ต้องอ่าน token จาก `/api/security/csrf-token` (รับค่า `data.csrf_token` + cookie `XSRF-TOKEN`) แล้วแนบ header `X-CSRF-TOKEN` พร้อม `X-Requested-With: XMLHttpRequest`
-- ไฟล์แนบจากฟอร์มเวชระเบียนต้องตรวจ MIME + นามสกุลตาม `FORM_ALLOWED_MIME`/`FORM_ALLOWED_EXT`, จำกัดขนาดด้วย `FORM_UPLOAD_MAX_MB`, เก็บภายใต้ `storage/app/private/forms/` และ log เฉพาะ hash/ชนิด/ขนาด ไม่ log ชื่อไฟล์จริง
-- หลีกเลี่ยงการ log ค่า credential หรือ token ใช้ hash (`sha256 + APP_KEY`) หากจำเป็นต้องอ้างอิง identifier
+## 2. CSRF & Session Flow สำหรับ Public Forms
+1. Frontend เรียก `GET /api/security/csrf-token` → ระบบส่ง cookie `XSRF-TOKEN` (SameSite=Lax) และ body `{ csrf_token }`
+2. ทุกคำขอ `POST`/`PUT`/`DELETE` ต้องส่ง header `X-CSRF-TOKEN` (ค่าเดียวกับใน body) และ `X-Requested-With: XMLHttpRequest`
+3. Middleware `api.csrf` จะตรวจสอบทั้ง token และ header ข้างต้น รวมถึง reject เมื่อ environment ไม่อนุญาต (ไม่มี bypass สำหรับ unit test)
+4. หาก token mismatch จะได้ HTTP 419 พร้อม message generic
 
-## 3. โครงสร้างพื้นฐาน
-- ใช้ firewall จำกัดการเข้าถึงพอร์ต (อนุญาตเฉพาะ 80/443 สำหรับสาธารณะ, 22 สำหรับ IP ที่อนุญาต)
-- อัปเดตระบบปฏิบัติการ, PHP, Node.js, MySQL เป็นประจำตามรอบ patch ของผู้ผลิต
-- ใช้ระบบสำรองข้อมูลอัตโนมัติ + จัดเก็บในที่ปลอดภัย (offsite + encryption)
-- ตรวจสอบสิทธิ์ของ process/file: web user (`www-data`) ไม่มีสิทธิ์เขียนเกินความจำเป็น
-- ตั้งค่า role-based access บนฐานข้อมูล/โฮสต์ตามหลัก least privilege (เฉพาะ service ที่จำเป็นเท่านั้นที่เข้าถึงได้)
-- เปิดใช้ Fail2ban/ModSecurity หรือ WAF หากระบบเชื่อมต่ออินเทอร์เน็ตสาธารณะ
-- ติดตั้งระบบตรวจสอบการบุกรุก (IDS/IPS) และเชื่อมต่อ log เข้ากับระบบรวมศูนย์
+## 3. Upload Policy
+- รองรับการอัปโหลดเฉพาะฟอร์ม `medical-record-request`
+- ตรวจ MIME และนามสกุลจาก ENV (`FORM_ALLOWED_MIME`, `FORM_ALLOWED_EXT`) ก่อนบันทึก
+- จำกัดขนาดไฟล์ด้วย `FORM_UPLOAD_MAX_MB` และส่ง error 422 หากเกิน
+- เปลี่ยนชื่อไฟล์เป็น SHA-256 hash + extension ก่อนเก็บลง `storage/app/private/forms/medical-records`
+- เก็บไฟล์นอก webroot พร้อมสิทธิ์ 750 / owner = web user (`www-data`)
+- Log เฉพาะ hash, ขนาดไฟล์ (bytes) และ MIME ห้ามบันทึกชื่อไฟล์จริงหรือ path เต็ม
 
-## 4. กระบวนการและบุคลากร
-- บังคับใช้ 2FA กับบัญชีที่เข้าถึงเซิร์ฟเวอร์, GitHub, ระบบบริหารโครงการ
-- ทบทวนสิทธิ์ (access review) รายไตรมาสสำหรับ GitHub, Database, Cloud provider
-- มีขั้นตอนแจ้งเหตุ security incident ที่ชัดเจน (ดู `docs/RUNBOOK.md`)
-- จัดอบรมความปลอดภัยประจำปีให้กับทีมพัฒนาและดูแลระบบ
-- เก็บหลักฐานการทดสอบ penetration หรือ vulnerability scan และติดตามผลการแก้ไข
+## 4. Logging & Observability
+- Middleware `AssignRequestId` แนบ `X-Request-Id` ในทุกคำขอ พร้อมบันทึกลง Context
+- Processor `RequestContextProcessor` เพิ่ม context ปลอดภัยในทุก log record: `request_id`, `user_id`, `ip`, `user_agent`
+- ระดับ DEBUG ต้องเปิดด้วย `LOG_LEVEL=debug` เท่านั้น และห้ามใช้ใน production ยกเว้นช่วง incident (หลังจากนั้นปรับกลับเป็น `info`)
+- ห้าม log credential, citizen_id, เบอร์โทร, อีเมล หรือข้อมูล PHI อื่น ๆ ให้ใช้ hash/summary หากจำเป็นต้องอ้างอิง
+- เก็บ log ลง channel `structured` (JSON) เพื่อให้ง่ายต่อการ ingest เข้าสู่ระบบรวมศูนย์ เช่น Loki/ELK
 
-## 5. ตารางตรวจสอบประจำ (Security Checklist)
-| ความถี่ | งานที่ต้องทำ | ผู้รับผิดชอบ |
+## 5. Token & Authentication Policy
+- Sanctum token สร้างผ่าน `POST /api/auth/login` โดย map role → abilities ดังนี้
+  - `viewer` → `['viewer']`
+  - `staff` → `['staff']`
+  - `admin` → `['admin', 'staff']`
+- Logout ใช้ `POST /api/auth/logout` ซึ่งจะลบ token ปัจจุบันเสมอ (แม้เรียกซ้ำ)
+- ควรตั้ง cron ลบ token ที่หมดอายุหรือไม่ได้ใช้งานเกิน 90 วัน (`personal_access_tokens`)
+- ข้อความ error ทุกกรณีต้องเป็น generic เช่น `Authentication failed.` เพื่อป้องกัน user enumeration
+
+## 6. Rate Limiting
+| Limiter | ค่า default | ครอบคลุม |
 | --- | --- | --- |
-| รายวัน | ตรวจ log ผิดปกติ (auth fail, error 5xx), สถานะ backup | DevOps on duty |
-| รายสัปดาห์ | รัน `npm audit` / `composer audit`, ตรวจผลสแกน WAF | Lead developer |
-| รายเดือน | ทบทวน TLS cert, อัปเดตแพตช์ระบบ, ตรวจ account ที่ไม่ได้ใช้งาน | Infra team |
-| รายไตรมาส | ทดสอบกู้คืนข้อมูล, ทำ access review, vulnerability scan | Security officer |
-| รายปี | จัดอบรม security awareness, ทบทวนนโยบาย PDPA/กฎหมายที่เกี่ยวข้อง | CISO / HR |
+| `public-api` | `RATE_LIMIT_PUBLIC` requests/นาที/ไอพี | `/api/health`, `/api/news`, `/api/security/csrf-token`, ฟอร์มสาธารณะ |
+| `auth-login` | `RATE_LIMIT_AUTH_LOGIN_ATTEMPTS` ครั้งต่อ `RATE_LIMIT_AUTH_LOGIN_DECAY` นาที/ไอพี | `/api/auth/login` |
+| `staff-api` | `RATE_LIMIT_STAFF` requests/นาที/ผู้ใช้ | `/api/auth/logout`, `/api/staff/me`, `/api/staff/news*` |
 
-## 6. การรายงานช่องโหว่
-- ภายในองค์กร: สร้าง ticket หมวด Security ในระบบบริหารโครงการ และแจ้งผ่าน Teams ช่อง #security-alert
-- ภายนอกองค์กร: กำหนดอีเมล `security@hospital.local` และตอบรับภายใน 3 วันทำการ
-- ติดตามการแก้ไขจนเสร็จ พร้อมเอกสารประกอบ (patch note, test case)
+เพิ่ม limiter ใหม่เมื่อมี endpoint สำคัญอื่น ๆ และอัปเดตเอกสารนี้ทุกครั้ง
 
-## 7. เอกสารอ้างอิงที่เกี่ยวข้อง
-- `docs/CODING_RULES.md` – กฎการเขียนโค้ดที่ช่วยลดความเสี่ยง security
-- `docs/ENV.md` – การจัดการตัวแปรแวดล้อมและความลับ
-- `docs/RUNBOOK.md` – กระบวนการ deploy/rollback และ incident response
-- Postman collection – ใช้ทดสอบ endpoint security (auth, rate limit, validation)
+## 7. ข้อมูลและความเป็นส่วนตัว
+- แฮชหมายเลขบัตรประชาชนด้วย `hash('sha256', citizen_id.APP_KEY)` และเก็บ mask (`1234******23`) เพื่อใช้อ้างอิง
+- เก็บ IP และ User Agent ของทุกฟอร์มเพื่อการตรวจสอบ/ป้องกัน fraud แต่ให้ anonymise ตาม retention policy
+- พิจารณาเข้ารหัสข้อมูลอ่อนไหวเพิ่มเติมด้วย `Crypt::encryptString` หากต้องเก็บเลขเวชระเบียนหรือเบอร์โทรในอนาคต
+- ตรวจสอบ retention ตาม `docs/DB.md` และตั้ง batch job เพื่อลบ/เบลอข้อมูลเมื่อครบกำหนด
+
+## 8. โครงสร้างพื้นฐาน
+- Reverse proxy/Nginx ต้องตั้ง security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Content-Security-Policy`)
+- จำกัดสิทธิ์ระบบปฏิบัติการ: web user ไม่มีสิทธิ์ sudo และมีสิทธิ์เขียนเฉพาะ `storage/` และ `bootstrap/cache`
+- เปิด firewall อนุญาตเฉพาะพอร์ตจำเป็น (80/443) และจำกัด SSH ให้เฉพาะ IP ที่อนุญาตพร้อม 2FA
+- สำรองฐานข้อมูลและไฟล์แนบตามตารางใน `docs/DB.md`
+
+## 9. กระบวนการและการอบรม
+- ทำ access review (GitHub, Database, Server) ทุกไตรมาสและบันทึกผล
+- จัดอบรม security awareness ปีละครั้ง และทบทวนนโยบาย PDPA เป็นประจำ
+- ใช้ incident response plan ใน `docs/RUNBOOK.md` เมื่อเกิดเหตุผิดปกติ พร้อมเก็บหลักฐาน (log + request_id)
+
+## 10. การรายงานช่องโหว่
+- ภายใน: สร้าง ticket หมวด Security และแจ้งช่องทาง Teams `#hospital-ops`
+- ภายนอก: เตรียมอีเมล `security@hospital.local` รับแจ้งและตอบรับภายใน 3 วันทำการ
+- ติดตามการแก้ไขจนเสร็จ พร้อมทดสอบซ้ำและบันทึกลง `docs/CHANGELOG.md`
