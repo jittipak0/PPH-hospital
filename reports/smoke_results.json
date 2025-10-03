@@ -1,0 +1,135 @@
+{
+  "generatedAt": "2025-10-03T17:00:22.776Z",
+  "baseUrl": "http://localhost:8000",
+  "results": [
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "category": "public",
+      "attempted": true,
+      "ok": false,
+      "detail": "fetch failed",
+      "startedAt": "2025-10-03T17:00:22.716Z",
+      "completedAt": "2025-10-03T17:00:22.772Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/security/csrf-token",
+      "category": "public",
+      "attempted": true,
+      "ok": false,
+      "detail": "fetch failed",
+      "startedAt": "2025-10-03T17:00:22.772Z",
+      "completedAt": "2025-10-03T17:00:22.774Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/news",
+      "category": "public",
+      "attempted": true,
+      "ok": false,
+      "detail": "fetch failed",
+      "startedAt": "2025-10-03T17:00:22.774Z",
+      "completedAt": "2025-10-03T17:00:22.776Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/forms/medical-record-request",
+      "category": "public-form",
+      "attempted": false,
+      "ok": false,
+      "detail": "requires CSRF cookie + human consent; skipped to avoid unintended submissions",
+      "startedAt": "2025-10-03T17:00:22.776Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/forms/donation",
+      "category": "public-form",
+      "attempted": false,
+      "ok": false,
+      "detail": "requires CSRF cookie + human consent; skipped to avoid unintended submissions",
+      "startedAt": "2025-10-03T17:00:22.776Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/forms/satisfaction",
+      "category": "public-form",
+      "attempted": false,
+      "ok": false,
+      "detail": "requires CSRF cookie + human consent; skipped to avoid unintended submissions",
+      "startedAt": "2025-10-03T17:00:22.776Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/programs/health-rider/apply",
+      "category": "public-form",
+      "attempted": false,
+      "ok": false,
+      "detail": "requires CSRF cookie + human consent; skipped to avoid unintended submissions",
+      "startedAt": "2025-10-03T17:00:22.776Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "category": "auth",
+      "attempted": false,
+      "ok": false,
+      "detail": "requires authenticated staff token which is not configured in smoke test",
+      "startedAt": "2025-10-03T17:00:22.776Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "category": "auth",
+      "attempted": false,
+      "ok": false,
+      "detail": "requires authenticated staff token which is not configured in smoke test",
+      "startedAt": "2025-10-03T17:00:22.776Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/staff/me",
+      "category": "staff",
+      "attempted": false,
+      "ok": false,
+      "detail": "requires authenticated staff token which is not configured in smoke test",
+      "startedAt": "2025-10-03T17:00:22.776Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/staff/news",
+      "category": "staff",
+      "attempted": false,
+      "ok": false,
+      "detail": "requires authenticated staff token which is not configured in smoke test",
+      "startedAt": "2025-10-03T17:00:22.776Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/staff/news",
+      "category": "staff",
+      "attempted": false,
+      "ok": false,
+      "detail": "requires authenticated staff token which is not configured in smoke test",
+      "startedAt": "2025-10-03T17:00:22.776Z"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/staff/news/{id}",
+      "category": "staff",
+      "attempted": false,
+      "ok": false,
+      "detail": "requires authenticated staff token which is not configured in smoke test",
+      "startedAt": "2025-10-03T17:00:22.776Z"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/staff/news/{id}",
+      "category": "staff",
+      "attempted": false,
+      "ok": false,
+      "detail": "requires authenticated staff token which is not configured in smoke test",
+      "startedAt": "2025-10-03T17:00:22.776Z"
+    }
+  ]
+}

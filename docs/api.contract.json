@@ -1,0 +1,687 @@
+{
+  "generatedAt": "2025-01-04T00:00:00Z",
+  "source": "docs/ROUTES.md",
+  "endpoints": [
+    {
+      "path": "/api/health",
+      "method": "GET",
+      "category": "public",
+      "headers": [],
+      "query": {},
+      "body": null,
+      "responses": {
+        "200": {
+          "shape": {
+            "data": {
+              "ok": "boolean",
+              "app": {
+                "name": "string",
+                "environment": "string",
+                "version": "string"
+              },
+              "services": {
+                "database": { "status": "string", "connection": "string" },
+                "queue": { "status": "string", "connection": "string" },
+                "storage": { "status": "string", "disk": "string" }
+              }
+            },
+            "meta": {
+              "request_id": "string",
+              "timestamp": "string"
+            }
+          }
+        }
+      },
+      "errors": {
+        "429": "standardRateLimit",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/security/csrf-token",
+      "method": "GET",
+      "category": "public",
+      "headers": [],
+      "query": {},
+      "body": null,
+      "responses": {
+        "200": {
+          "shape": {
+            "data": {
+              "csrf_token": "string"
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        }
+      },
+      "errors": {
+        "429": "standardRateLimit",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/news",
+      "method": "GET",
+      "category": "public",
+      "headers": [],
+      "query": {
+        "page": { "type": "number", "required": false, "default": 1 },
+        "per_page": { "type": "number", "required": false, "default": 10, "max": 50 },
+        "sort": { "type": "string", "required": false, "enum": ["-published_at", "published_at"], "default": "-published_at" }
+      },
+      "body": null,
+      "responses": {
+        "200": {
+          "shape": {
+            "data": {
+              "news": [
+                {
+                  "id": "number",
+                  "title": "string",
+                  "body": "string",
+                  "published_at": "string"
+                }
+              ],
+              "pagination": {
+                "current_page": "number",
+                "per_page": "number",
+                "total": "number",
+                "last_page": "number"
+              }
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        }
+      },
+      "errors": {
+        "400": "standardValidation",
+        "429": "standardRateLimit",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/forms/medical-record-request",
+      "method": "POST",
+      "category": "public-form",
+      "headers": [
+        "Accept: application/json",
+        "X-CSRF-TOKEN",
+        "X-Requested-With: XMLHttpRequest"
+      ],
+      "body": {
+        "type": "multipart/form-data",
+        "fields": {
+          "full_name": { "type": "string", "required": true },
+          "hn": { "type": "string", "required": true },
+          "citizen_id": { "type": "string", "required": true },
+          "phone": { "type": "string", "required": true },
+          "email": { "type": "string", "required": false },
+          "address": { "type": "string", "required": true },
+          "reason": { "type": "string", "required": false },
+          "consent": { "type": "boolean", "required": true },
+          "idcard_file": {
+            "type": "file",
+            "required": false,
+            "constraints": {
+              "mime": "FORM_ALLOWED_MIME",
+              "ext": "FORM_ALLOWED_EXT",
+              "maxMb": "FORM_UPLOAD_MAX_MB"
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "shape": {
+            "data": {
+              "id": "number",
+              "submitted_at": "string"
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        }
+      },
+      "errors": {
+        "400": "standardValidation",
+        "419": "standardCsrf",
+        "429": "standardRateLimit",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/forms/donation",
+      "method": "POST",
+      "category": "public-form",
+      "headers": [
+        "Accept: application/json",
+        "Content-Type: application/json",
+        "X-CSRF-TOKEN",
+        "X-Requested-With: XMLHttpRequest"
+      ],
+      "body": {
+        "type": "json",
+        "fields": {
+          "donor_name": { "type": "string", "required": true },
+          "amount": { "type": "number", "required": true, "min": 0.01 },
+          "channel": { "type": "string", "required": true, "enum": ["cash", "bank", "promptpay"] },
+          "phone": { "type": "string", "required": false },
+          "email": { "type": "string", "required": false },
+          "note": { "type": "string", "required": false }
+        }
+      },
+      "responses": {
+        "201": {
+          "shape": {
+            "data": {
+              "id": "number",
+              "reference_code": "string",
+              "submitted_at": "string"
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        }
+      },
+      "errors": {
+        "400": "standardValidation",
+        "419": "standardCsrf",
+        "429": "standardRateLimit",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/forms/satisfaction",
+      "method": "POST",
+      "category": "public-form",
+      "headers": [
+        "Accept: application/json",
+        "Content-Type: application/json",
+        "X-CSRF-TOKEN",
+        "X-Requested-With: XMLHttpRequest"
+      ],
+      "body": {
+        "type": "json",
+        "fields": {
+          "score_overall": { "type": "number", "required": true, "min": 1, "max": 5 },
+          "score_waittime": { "type": "number", "required": true, "min": 1, "max": 5 },
+          "score_staff": { "type": "number", "required": true, "min": 1, "max": 5 },
+          "comment": { "type": "string", "required": false },
+          "service_date": { "type": "string", "required": false, "format": "date" }
+        }
+      },
+      "responses": {
+        "201": {
+          "shape": {
+            "data": {
+              "id": "number",
+              "submitted_at": "string"
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        }
+      },
+      "errors": {
+        "400": "standardValidation",
+        "419": "standardCsrf",
+        "429": "standardRateLimit",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/programs/health-rider/apply",
+      "method": "POST",
+      "category": "public-form",
+      "headers": [
+        "Accept: application/json",
+        "Content-Type: application/json",
+        "X-CSRF-TOKEN",
+        "X-Requested-With: XMLHttpRequest"
+      ],
+      "body": {
+        "type": "json",
+        "fields": {
+          "full_name": { "type": "string", "required": true },
+          "hn": { "type": "string", "required": false },
+          "address": { "type": "string", "required": true },
+          "district": { "type": "string", "required": true },
+          "province": { "type": "string", "required": true },
+          "zipcode": { "type": "string", "required": true },
+          "phone": { "type": "string", "required": true },
+          "line_id": { "type": "string", "required": false },
+          "consent": { "type": "boolean", "required": true }
+        }
+      },
+      "responses": {
+        "201": {
+          "shape": {
+            "data": {
+              "id": "number",
+              "submitted_at": "string"
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        }
+      },
+      "errors": {
+        "400": "standardValidation",
+        "419": "standardCsrf",
+        "429": "standardRateLimit",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "category": "auth",
+      "headers": [
+        "Accept: application/json",
+        "Content-Type: application/json",
+        "X-CSRF-TOKEN",
+        "X-Requested-With: XMLHttpRequest"
+      ],
+      "body": {
+        "type": "json",
+        "fields": {
+          "username": { "type": "string", "required": true },
+          "password": { "type": "string", "required": true }
+        }
+      },
+      "responses": {
+        "200": {
+          "shape": {
+            "data": {
+              "token": {
+                "access_token": "string",
+                "token_type": "string",
+                "abilities": ["string"]
+              },
+              "user": {
+                "id": "string",
+                "username": "string",
+                "name": "string",
+                "email": "string",
+                "role": "string",
+                "abilities": ["string"],
+                "last_login_at": "string"
+              }
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        },
+        "401": {
+          "shape": {
+            "error": {
+              "message": "string"
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        }
+      },
+      "errors": {
+        "429": "standardAuthThrottle",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/auth/logout",
+      "method": "POST",
+      "category": "auth",
+      "headers": [
+        "Accept: application/json",
+        "Content-Type: application/json",
+        "Authorization: Bearer <token>",
+        "X-CSRF-TOKEN",
+        "X-Requested-With: XMLHttpRequest"
+      ],
+      "body": {
+        "type": "json",
+        "fields": {}
+      },
+      "responses": {
+        "200": {
+          "shape": {
+            "data": { "success": "boolean" },
+            "meta": { "request_id": "string" }
+          }
+        }
+      },
+      "errors": {
+        "401": "standardAuthFailed",
+        "419": "standardCsrf",
+        "429": "standardStaffRateLimit",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/staff/me",
+      "method": "GET",
+      "category": "staff",
+      "headers": [
+        "Accept: application/json",
+        "Authorization: Bearer <token>"
+      ],
+      "query": {},
+      "body": null,
+      "responses": {
+        "200": {
+          "shape": {
+            "data": {
+              "id": "string",
+              "username": "string",
+              "name": "string",
+              "email": "string",
+              "role": "string",
+              "abilities": ["string"],
+              "last_login_at": "string"
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        }
+      },
+      "errors": {
+        "401": "standardAuthFailed",
+        "429": "standardStaffRateLimit",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/staff/news",
+      "method": "GET",
+      "category": "staff",
+      "headers": [
+        "Accept: application/json",
+        "Authorization: Bearer <token>"
+      ],
+      "query": {
+        "page": { "type": "number", "required": false },
+        "per_page": { "type": "number", "required": false, "max": 50 },
+        "sort": { "type": "string", "required": false, "default": "-published_at" }
+      },
+      "body": null,
+      "responses": {
+        "200": {
+          "shape": {
+            "data": {
+              "news": [
+                {
+                  "id": "number",
+                  "title": "string",
+                  "summary": "string",
+                  "body": "string",
+                  "published_at": "string",
+                  "created_at": "string",
+                  "updated_at": "string"
+                }
+              ],
+              "pagination": {
+                "current_page": "number",
+                "per_page": "number",
+                "total": "number",
+                "last_page": "number"
+              }
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        }
+      },
+      "errors": {
+        "401": "standardAuthFailed",
+        "403": "standardUnauthorized",
+        "429": "standardStaffRateLimit",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/staff/news",
+      "method": "POST",
+      "category": "staff",
+      "headers": [
+        "Accept: application/json",
+        "Content-Type: application/json",
+        "Authorization: Bearer <token>",
+        "X-CSRF-TOKEN",
+        "X-Requested-With: XMLHttpRequest"
+      ],
+      "body": {
+        "type": "json",
+        "fields": {
+          "title": { "type": "string", "required": true },
+          "body": { "type": "string", "required": false },
+          "published_at": { "type": "string", "required": false }
+        }
+      },
+      "responses": {
+        "201": {
+          "shape": {
+            "data": {
+              "id": "number",
+              "title": "string",
+              "summary": "string",
+              "body": "string",
+              "published_at": "string",
+              "created_at": "string",
+              "updated_at": "string"
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        }
+      },
+      "errors": {
+        "400": "standardValidation",
+        "401": "standardAuthFailed",
+        "403": "standardUnauthorized",
+        "419": "standardCsrf",
+        "429": "standardStaffRateLimit",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/staff/news/{id}",
+      "method": "PUT",
+      "category": "staff",
+      "headers": [
+        "Accept: application/json",
+        "Content-Type: application/json",
+        "Authorization: Bearer <token>",
+        "X-CSRF-TOKEN",
+        "X-Requested-With: XMLHttpRequest"
+      ],
+      "body": {
+        "type": "json",
+        "fields": {
+          "title": { "type": "string", "required": false },
+          "body": { "type": "string", "required": false },
+          "published_at": { "type": "string", "required": false }
+        }
+      },
+      "responses": {
+        "200": {
+          "shape": {
+            "data": {
+              "id": "number",
+              "title": "string",
+              "summary": "string",
+              "body": "string",
+              "published_at": "string",
+              "created_at": "string",
+              "updated_at": "string"
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        },
+        "404": {
+          "shape": {
+            "error": {
+              "message": "string"
+            },
+            "meta": {
+              "request_id": "string"
+            }
+          }
+        }
+      },
+      "errors": {
+        "400": "standardValidation",
+        "401": "standardAuthFailed",
+        "403": "standardUnauthorized",
+        "419": "standardCsrf",
+        "429": "standardStaffRateLimit",
+        "500": "standardServerError"
+      }
+    },
+    {
+      "path": "/api/staff/news/{id}",
+      "method": "DELETE",
+      "category": "staff",
+      "headers": [
+        "Accept: application/json",
+        "Authorization: Bearer <token>",
+        "X-CSRF-TOKEN",
+        "X-Requested-With: XMLHttpRequest"
+      ],
+      "body": null,
+      "responses": {
+        "204": {
+          "shape": null,
+          "headers": {
+            "X-Request-Id": "string"
+          }
+        }
+      },
+      "errors": {
+        "401": "standardAuthFailed",
+        "403": "standardUnauthorized",
+        "419": "standardCsrf",
+        "429": "standardStaffRateLimit",
+        "500": "standardServerError"
+      }
+    }
+  ],
+  "errorCatalog": {
+    "standardValidation": {
+      "status": 400,
+      "shape": {
+        "error": {
+          "message": "The given data was invalid.",
+          "details": "object"
+        },
+        "meta": {
+          "request_id": "string"
+        }
+      }
+    },
+    "standardAuthFailed": {
+      "status": 401,
+      "shape": {
+        "error": {
+          "message": "Authentication failed."
+        },
+        "meta": {
+          "request_id": "string"
+        }
+      }
+    },
+    "standardUnauthorized": {
+      "status": 403,
+      "shape": {
+        "error": {
+          "message": "This action is unauthorized."
+        },
+        "meta": {
+          "request_id": "string"
+        }
+      }
+    },
+    "standardNotFound": {
+      "status": 404,
+      "shape": {
+        "error": {
+          "message": "News article not found."
+        },
+        "meta": {
+          "request_id": "string"
+        }
+      }
+    },
+    "standardCsrf": {
+      "status": 419,
+      "shape": {
+        "error": {
+          "message": "CSRF token mismatch."
+        },
+        "meta": {
+          "request_id": "string"
+        }
+      }
+    },
+    "standardRateLimit": {
+      "status": 429,
+      "shape": {
+        "error": {
+          "message": "Too many requests."
+        },
+        "meta": {
+          "request_id": "string"
+        }
+      }
+    },
+    "standardAuthThrottle": {
+      "status": 429,
+      "shape": {
+        "error": {
+          "message": "Too many requests."
+        },
+        "meta": {
+          "request_id": "string"
+        }
+      },
+      "notes": "Limiter auth-login"
+    },
+    "standardStaffRateLimit": {
+      "status": 429,
+      "shape": {
+        "error": {
+          "message": "Too many requests."
+        },
+        "meta": {
+          "request_id": "string"
+        }
+      },
+      "notes": "Limiter staff-api"
+    },
+    "standardServerError": {
+      "status": 500,
+      "shape": {
+        "error": {
+          "message": "Internal server error."
+        },
+        "meta": {
+          "request_id": "string"
+        }
+      }
+    }
+  }
+}
