@@ -3,14 +3,77 @@ const path = require('path')
 const Database = require('better-sqlite3')
 const bcrypt = require('bcryptjs')
 const { v4: uuidv4 } = require('uuid')
+const { baseLogger } = require('../utils/debugLogger')
+
+const logger = baseLogger.child({ module: 'sqlite' })
 
 // Ensure database directory exists
 const databasePath = path.resolve(__dirname, '../data/hospital.db')
 fs.mkdirSync(path.dirname(databasePath), { recursive: true })
 
+logger.info('Initializing SQLite connection', { databasePath })
 const db = new Database(databasePath)
 db.pragma('journal_mode = WAL')
 db.pragma('foreign_keys = ON')
+
+const summarizeResult = (result, type) => {
+  if (type === 'run') {
+    return { changes: result?.changes ?? null, lastInsertRowid: result?.lastInsertRowid ?? null }
+  }
+  if (type === 'all') {
+    return { rowCount: Array.isArray(result) ? result.length : null }
+  }
+  if (type === 'get') {
+    return { hasRow: Boolean(result) }
+  }
+  if (type === 'iterate') {
+    return { iterator: true }
+  }
+  return result
+}
+
+const instrumentStatement = (statement) => {
+  const sql = statement.source
+  const statementLogger = logger.child({ sql })
+  return new Proxy(statement, {
+    get(target, prop) {
+      const value = target[prop]
+      if (['run', 'get', 'all', 'iterate'].includes(prop) && typeof value === 'function') {
+        return (...args) => {
+          statementLogger.debug('Executing SQL statement', { operation: prop, parameters: args })
+          try {
+            const result = value.apply(target, args)
+            statementLogger.debug('SQL statement completed', {
+              operation: prop,
+              summary: summarizeResult(result, prop)
+            })
+            return result
+          } catch (error) {
+            statementLogger.error('SQL statement failed', { operation: prop, error })
+            throw error
+          }
+        }
+      }
+      if (typeof value === 'function') {
+        return value.bind(target)
+      }
+      return value
+    }
+  })
+}
+
+const originalPrepare = db.prepare.bind(db)
+db.prepare = (...args) => {
+  logger.debug('Preparing SQL statement', { sql: args[0] })
+  const statement = originalPrepare(...args)
+  return instrumentStatement(statement)
+}
+
+const originalExec = db.exec.bind(db)
+db.exec = (sql) => {
+  logger.debug('Executing SQL batch', { sql })
+  return originalExec(sql)
+}
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
@@ -99,9 +162,11 @@ ensureTableColumn('users', 'lastLoginAt', 'TEXT')
 const seedDefaultUsers = () => {
   const count = db.prepare('SELECT COUNT(*) as total FROM users').get()
   if (count.total > 0) {
+    logger.debug('Skipping default user seed; users already present', { total: count.total })
     return
   }
 
+  logger.info('Seeding default user accounts and sample data')
   const timestamp = new Date().toISOString()
   const roles = [
     { username: 'admin', role: 'admin' },
@@ -132,6 +197,8 @@ const seedDefaultUsers = () => {
     )
   }
 
+  logger.debug('Default users seeded', { roles: roles.map((role) => role.username) })
+
   // Seed demo data for domain specific tables
   const doctorId = db.prepare('SELECT id FROM users WHERE role = ? LIMIT 1').get('doctor')?.id
   const nurseId = db.prepare('SELECT id FROM users WHERE role = ? LIMIT 1').get('nurse')?.id
@@ -142,6 +209,7 @@ const seedDefaultUsers = () => {
     )
     insertPatient.run(uuidv4(), doctorId, 'Somchai Prasert', 'Post-operative follow-up', timestamp)
     insertPatient.run(uuidv4(), doctorId, 'Suda Chaiyasit', 'Chronic hypertension', timestamp)
+    logger.debug('Seeded sample patients for doctor', { doctorId })
   }
 
   if (nurseId) {
@@ -150,6 +218,7 @@ const seedDefaultUsers = () => {
     )
     insertSchedule.run(uuidv4(), nurseId, new Date().toISOString().split('T')[0], 'Day Shift')
     insertSchedule.run(uuidv4(), nurseId, new Date(Date.now() + 86400000).toISOString().split('T')[0], 'Night Shift')
+    logger.debug('Seeded sample schedules for nurse', { nurseId })
   }
 
   const insertNews = db.prepare(
@@ -186,6 +255,7 @@ const seedDefaultUsers = () => {
     0,
     0
   )
+  logger.debug('Seeded sample news entries')
 }
 
 seedDefaultUsers()

@@ -13,6 +13,11 @@ const sanitizeRequest = (req, _res, next) => {
   if (req.params) {
     req.params = sanitizeObject(req.params)
   }
+  req.log?.debug('Sanitized request payloads', {
+    body: req.body,
+    query: req.query,
+    params: req.params
+  })
   next()
 }
 

@@ -1,11 +1,15 @@
 const { v4: uuidv4 } = require('uuid')
 const bcrypt = require('bcryptjs')
 const db = require('../config/db')
+const { baseLogger } = require('../utils/debugLogger')
+
+const logger = baseLogger.child({ model: 'userModel' })
 
 /**
  * Fetch user by username using a parameterized query to mitigate SQL injection.
  */
 const findByUsername = (username) => {
+  logger.debug('Fetching user by username', { username })
   return db.prepare('SELECT * FROM users WHERE username = ?').get(username)
 }
 
@@ -13,6 +17,7 @@ const findByUsername = (username) => {
  * Fetch user by id.
  */
 const findById = (id) => {
+  logger.debug('Fetching user by id', { id })
   return db.prepare('SELECT * FROM users WHERE id = ?').get(id)
 }
 
@@ -29,6 +34,7 @@ const createUser = ({
   department = null,
   lastLoginAt = null
 }) => {
+  logger.debug('Creating user record', { username, role })
   const timestamp = new Date().toISOString()
   const id = uuidv4()
   db.prepare(
@@ -54,8 +60,14 @@ const createUser = ({
  * Update an existing user. Only provided fields are updated.
  */
 const updateUser = (id, updates) => {
+  logger.debug('Updating user record', {
+    id,
+    fields: Object.keys(updates || {}),
+    hasPasswordUpdate: Boolean(updates?.password)
+  })
   const existing = findById(id)
   if (!existing) {
+    logger.warn('Attempted to update missing user', { id })
     return null
   }
   const timestamp = new Date().toISOString()
@@ -92,24 +104,30 @@ const updateUser = (id, updates) => {
 }
 
 const deleteUser = (id) => {
+  logger.debug('Deleting user record', { id })
   return db.prepare('DELETE FROM users WHERE id = ?').run(id)
 }
 
 const listUsers = () => {
-  return db
+  logger.debug('Listing all users')
+  const users = db
     .prepare(
       `SELECT id, username, role, acceptedPolicies, cid, fullName, department, lastLoginAt, createdAt, updatedAt FROM users`
     )
     .all()
+  logger.debug('Users fetched', { count: users.length })
+  return users
 }
 
 const acceptPolicies = (id) => {
+  logger.debug('Marking policies as accepted for user', { id })
   const timestamp = new Date().toISOString()
   db.prepare('UPDATE users SET acceptedPolicies = 1, updatedAt = ? WHERE id = ?').run(timestamp, id)
   return findById(id)
 }
 
 const upsertPersonnelUser = ({ username, cid = null, fullName = null, department = null, role = 'staff' }) => {
+  logger.debug('Upserting personnel user', { username, role })
   const existing = findByUsername(username)
   const timestamp = new Date().toISOString()
   if (existing) {
@@ -120,6 +138,7 @@ const upsertPersonnelUser = ({ username, cid = null, fullName = null, department
   }
 
   const placeholderPassword = bcrypt.hashSync(uuidv4(), 10)
+  logger.debug('Creating new personnel user placeholder', { username, role })
   return createUser({
     username,
     password: placeholderPassword,
@@ -133,6 +152,7 @@ const upsertPersonnelUser = ({ username, cid = null, fullName = null, department
 }
 
 const updateLastLogin = (id) => {
+  logger.debug('Updating last login timestamp', { id })
   const timestamp = new Date().toISOString()
   db.prepare('UPDATE users SET lastLoginAt = ?, updatedAt = ? WHERE id = ?').run(timestamp, timestamp, id)
   return findById(id)
