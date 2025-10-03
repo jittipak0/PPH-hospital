@@ -1,8 +1,13 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Forms\DonationController;
+use App\Http\Controllers\Forms\HealthRiderApplicationController;
+use App\Http\Controllers\Forms\MedicalRecordRequestController;
+use App\Http\Controllers\Forms\SatisfactionSurveyController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\Staff\NewsController as StaffNewsController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,6 +18,24 @@ Route::middleware('throttle:public-api')
 Route::middleware('throttle:public-api')
     ->get('/news', [NewsController::class, 'index'])
     ->name('api.news.index');
+
+Route::middleware('throttle:public-api')
+    ->get('/security/csrf-token', [SecurityController::class, 'csrfToken'])
+    ->name('api.security.csrf-token');
+
+Route::middleware(['throttle:public-api', 'api.csrf'])->group(function () {
+    Route::post('forms/medical-record-request', [MedicalRecordRequestController::class, 'store'])
+        ->name('api.forms.medical-record-request');
+
+    Route::post('forms/donation', [DonationController::class, 'store'])
+        ->name('api.forms.donation');
+
+    Route::post('forms/satisfaction', [SatisfactionSurveyController::class, 'store'])
+        ->name('api.forms.satisfaction');
+
+    Route::post('programs/health-rider/apply', [HealthRiderApplicationController::class, 'store'])
+        ->name('api.programs.health-rider.apply');
+});
 
 Route::prefix('auth')->name('api.auth.')->group(function () {
     Route::post('login', [AuthController::class, 'login'])

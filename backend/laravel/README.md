@@ -20,6 +20,7 @@ php artisan vendor:publish --provider="Laravel\\Sanctum\\SanctumServiceProvider"
 - `SANCTUM_STATEFUL_DOMAINS` = โดเมนที่แชร์ cookie กับ SPA
 - `RATE_LIMIT_PUBLIC`, `RATE_LIMIT_STAFF`, `RATE_LIMIT_AUTH_LOGIN_ATTEMPTS`, `RATE_LIMIT_AUTH_LOGIN_DECAY`
 - `ADMIN_INITIAL_USERNAME`, `ADMIN_INITIAL_NAME`, `ADMIN_INITIAL_EMAIL`, `ADMIN_INITIAL_PASSWORD`
+- `FORM_UPLOAD_MAX_MB`, `FORM_ALLOWED_MIME`, `FORM_ALLOWED_EXT` สำหรับควบคุมการอัปโหลดไฟล์จากฟอร์มสาธารณะ
 
 ## การรันและตรวจสอบ
 
@@ -56,10 +57,10 @@ php artisan test
 ```
 
 ## ทดสอบ Auth เบื้องต้นด้วย `curl`
-1. ขอ CSRF cookie และดึงค่า token จากไฟล์ cookie
+1. ขอ CSRF token และ cookie
    ```bash
-   curl -s -c cookies.txt http://localhost:8000/sanctum/csrf-cookie
-   export CSRF_TOKEN=$(grep XSRF-TOKEN cookies.txt | tail -n 1 | awk '{print $7}')
+   export CSRF_TOKEN=$(curl -s -c cookies.txt http://localhost:8000/api/security/csrf-token | jq -r '.data.csrf_token')
+   grep XSRF-TOKEN cookies.txt >/dev/null    # cookie ต้องถูกสร้างเพื่อให้ session ตรงกับ token
    ```
 2. เรียก `POST /api/auth/login` (ตัวอย่าง user จาก seeder: `admin` / `ChangeMe123!`)
    ```bash
@@ -90,6 +91,26 @@ php artisan test
 
 > หมายเหตุ: เก็บไฟล์ cookie และ token ไว้ในที่ปลอดภัย ห้าม commit และห้าม log ค่า credential ลงไฟล์ log
 
+## ตัวอย่างเรียกฟอร์มสาธารณะ (Medical Record Request)
+
+```bash
+export CSRF_TOKEN=$(curl -s -c cookies.txt http://localhost:8000/api/security/csrf-token | jq -r '.data.csrf_token')
+curl -sS -b cookies.txt -c cookies.txt \
+  -H "Accept: application/json" \
+  -H "X-CSRF-TOKEN: $CSRF_TOKEN" \
+  -H "X-Requested-With: XMLHttpRequest" \
+  -F "full_name=Jane Doe" \
+  -F "hn=AB123" \
+  -F "citizen_id=1234567890123" \
+  -F "phone=0812345678" \
+  -F "address=123 Example Street" \
+  -F "consent=yes" \
+  -F "idcard_file=@tests/Fixtures/idcard.pdf;type=application/pdf" \
+  http://localhost:8000/api/forms/medical-record-request | jq '.'
+```
+
+> เก็บไฟล์แนบไว้ใน `storage/app/private/forms/` (สร้างโฟลเดอร์ล่วงหน้าใน production)
+
 ## Rate Limit และสิทธิ์การเข้าถึง
 - `throttle:public-api` ครอบคลุม endpoint สาธารณะ (ค่าเริ่มต้น 60/min/IP)
 - `throttle:staff-api` ใช้กับ route ที่ต้องการ `auth:sanctum` (120/min/user)
@@ -114,6 +135,6 @@ php artisan db:seed --force
 ```
 
 ## Troubleshooting
-- 419 / CSRF: ตรวจว่ามี `X-Requested-With: XMLHttpRequest`, header `X-CSRF-TOKEN` และ cookie จาก `/sanctum/csrf-cookie`
+- 419 / CSRF: ตรวจว่ามี `X-Requested-With: XMLHttpRequest`, header `X-CSRF-TOKEN` และ cookie จาก `/api/security/csrf-token`
 - 401: ตรวจ rate limit (`429`) และความถูกต้องของ token + abilities
 - ล็อกเห็น `Session store not set`: ตรวจ `SESSION_DRIVER` และว่ามี StartSession middleware (คอนฟิกไว้แล้วสำหรับกลุ่ม `api`)

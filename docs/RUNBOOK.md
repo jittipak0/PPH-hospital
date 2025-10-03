@@ -42,7 +42,8 @@
 4. ตรวจ log สั้น ๆ ว่าไม่มี error เพิ่ม (`/var/log/nginx/error.log`, `/var/log/php8.2-fpm.log`)
 
 ## 4. หลัง Deploy (Post-deploy)
-- ตรวจ endpoint สำคัญ: `GET /api/health` (Laravel API ควรตอบ `{ "data": { "ok": true, ... }, "meta": { "request_id": "..." } }`), `GET /api/news`, `POST /api/auth/login`
+- ตรวจ endpoint สำคัญ: `GET /api/health` (Laravel API ควรตอบ `{ "data": { "ok": true, ... }, "meta": { "request_id": "..." } }`), `GET /api/news`, `GET /api/security/csrf-token`, `POST /api/auth/login`
+- ทดสอบฟอร์มสาธารณะอย่างน้อย 1 รายการ (เช่น `POST /api/forms/medical-record-request` พร้อมไฟล์ทดสอบ) เพื่อตรวจสอบ CSRF และการบันทึกไฟล์ใน `storage/app/private/forms`
 - ตรวจหน้าเว็บหลักและการโหลดข่าวใน frontend
 - ยืนยันว่า metric/monitoring (APM, uptime robot) แสดงค่าปกติ
 - อัปเดตช่องทางสื่อสารแจ้งว่า deploy เสร็จ พร้อมลิงก์ release note

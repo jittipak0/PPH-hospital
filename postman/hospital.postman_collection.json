@@ -2,7 +2,7 @@
   "info": {
     "name": "Hospital API",
     "_postman_id": "00000000-0000-0000-0000-000000000000",
-    "description": "Basic endpoints for health, news, and auth",
+    "description": "Basic endpoints for health, news, auth, CSRF, and public form submissions",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -19,6 +19,24 @@
           "path": [
             "api",
             "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "CSRF Token",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base}}/api/security/csrf-token",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "security",
+            "csrf-token"
           ]
         }
       }
@@ -89,6 +107,195 @@
           ]
         }
       }
+    },
+    {
+      "name": "Submit Medical Record Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "X-Requested-With",
+            "value": "XMLHttpRequest"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "full_name",
+              "value": "Jane Doe",
+              "type": "text"
+            },
+            {
+              "key": "hn",
+              "value": "AB123",
+              "type": "text"
+            },
+            {
+              "key": "citizen_id",
+              "value": "1234567890123",
+              "type": "text"
+            },
+            {
+              "key": "phone",
+              "value": "0812345678",
+              "type": "text"
+            },
+            {
+              "key": "address",
+              "value": "123 Example Street",
+              "type": "text"
+            },
+            {
+              "key": "consent",
+              "value": "yes",
+              "type": "text"
+            },
+            {
+              "key": "idcard_file",
+              "src": "{{idcard_file}}",
+              "type": "file"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base}}/api/forms/medical-record-request",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "forms",
+            "medical-record-request"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit Donation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "X-Requested-With",
+            "value": "XMLHttpRequest"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"donor_name\": \"John Smith\", \"amount\": 500, \"channel\": \"bank\", \"phone\": \"0999999999\", \"email\": \"john@example.com\"}"
+        },
+        "url": {
+          "raw": "{{base}}/api/forms/donation",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "forms",
+            "donation"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit Satisfaction Survey",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "X-Requested-With",
+            "value": "XMLHttpRequest"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"score_overall\": 5, \"score_waittime\": 4, \"score_staff\": 5, \"comment\": \"Great service\", \"service_date\": \"2025-01-01\"}"
+        },
+        "url": {
+          "raw": "{{base}}/api/forms/satisfaction",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "forms",
+            "satisfaction"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Apply Health Rider",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf_token}}"
+          },
+          {
+            "key": "X-Requested-With",
+            "value": "XMLHttpRequest"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"full_name\": \"Mary Poppins\", \"hn\": \"HR456\", \"address\": \"456 Rider Road\", \"district\": \"Central\", \"province\": \"Bangkok\", \"zipcode\": \"10110\", \"phone\": \"0888888888\", \"consent\": true}"
+        },
+        "url": {
+          "raw": "{{base}}/api/programs/health-rider/apply",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "programs",
+            "health-rider",
+            "apply"
+          ]
+        }
+      }
     }
   ],
   "variable": [
@@ -98,6 +305,10 @@
     },
     {
       "key": "token",
+      "value": ""
+    },
+    {
+      "key": "csrf_token",
       "value": ""
     }
   ]
