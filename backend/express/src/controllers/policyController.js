@@ -2,11 +2,15 @@ const privacyPolicy = `โรงพยาบาลให้ความสำค
 
 const termsOfUse = `ระบบสารสนเทศภายในนี้อนุญาตให้ใช้ได้เฉพาะบุคลากรของโรงพยาบาลเท่านั้น การเข้าถึงหรือเปลี่ยนแปลงข้อมูลโดยไม่ได้รับอนุญาตถือเป็นความผิดตามระเบียบและกฎหมาย หากตรวจพบการละเมิดระบบจะมีการบันทึกหลักฐานและดำเนินการตามขั้นตอนที่เหมาะสม`
 
-const getPrivacyPolicy = (_req, res) => {
+const getPrivacyPolicy = (req, res) => {
+  const logger = req.log?.child({ controller: 'policyController', action: 'getPrivacyPolicy' })
+  logger?.debug('Serving privacy policy text')
   res.json({ policy: privacyPolicy })
 }
 
-const getTermsOfUse = (_req, res) => {
+const getTermsOfUse = (req, res) => {
+  const logger = req.log?.child({ controller: 'policyController', action: 'getTermsOfUse' })
+  logger?.debug('Serving terms of use text')
   res.json({ terms: termsOfUse })
 }
 

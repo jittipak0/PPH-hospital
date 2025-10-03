@@ -1,5 +1,6 @@
 const crypto = require('crypto')
 const { getPool } = require('../config/hosxpDb')
+const { baseLogger } = require('../utils/debugLogger')
 
 const baseSelect = `
   SELECT
@@ -14,7 +15,10 @@ const baseSelect = `
   LEFT JOIN hospital_department h ON h.id = o.hospital_department_id
 `
 
+const logger = baseLogger.child({ model: 'personnelModel' })
+
 const authenticate = async ({ username, password }) => {
+  logger.debug('Authenticating personnel user against HOSxP', { username })
   const pool = getPool()
   const hashed = crypto.createHash('md5').update(password ?? '').digest('hex')
   const [rows] = await pool.execute(
@@ -22,17 +26,22 @@ const authenticate = async ({ username, password }) => {
     [username, hashed]
   )
   if (!rows || rows.length === 0) {
+    logger.debug('No personnel record found for credentials', { username })
     return null
   }
+  logger.debug('Personnel record authenticated', { username })
   return normalize(rows[0])
 }
 
 const findByCid = async (cid) => {
+  logger.debug('Looking up personnel by CID', { cid })
   const pool = getPool()
   const [rows] = await pool.execute(`${baseSelect} WHERE d.cid = ? LIMIT 1`, [cid])
   if (!rows || rows.length === 0) {
+    logger.debug('No personnel record found for CID', { cid })
     return null
   }
+  logger.debug('Personnel record found for CID', { cid })
   return normalize(rows[0])
 }
 
