@@ -7,6 +7,7 @@ use App\Http\Requests\Forms\MedicalRecordRequestFormRequest;
 use App\Models\MedicalRecordRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -17,21 +18,46 @@ class MedicalRecordRequestController extends Controller
 {
     public function store(MedicalRecordRequestFormRequest $request): JsonResponse
     {
+        Log::debug('Medical record request received', [
+            'has_attachment' => $request->hasFile('idcard_file'),
+            'ip_address' => $request->ip(),
+        ]);
+
         $validated = $request->validated();
         $filePath = null;
+
+        Log::debug('Medical record request validated', [
+            'hn' => $validated['hn'],
+            'consent' => (bool) $validated['consent'],
+        ]);
 
         try {
             if ($request->hasFile('idcard_file')) {
                 $file = $request->file('idcard_file');
                 $this->assertUploadedFile($file);
 
+                Log::debug('Storing medical record request attachment', [
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type' => $file->getMimeType(),
+                    'size' => $file->getSize(),
+                ]);
+
                 $directory = 'private/forms/idcards';
                 Storage::disk('local')->makeDirectory($directory);
                 $fileName = Str::uuid()->toString() . '.' . $file->getClientOriginalExtension();
                 $filePath = $file->storeAs($directory, $fileName, 'local');
+
+                Log::debug('Medical record request attachment stored', [
+                    'path' => $filePath,
+                ]);
             }
 
             $citizenId = $validated['citizen_id'];
+
+            Log::debug('Persisting medical record request', [
+                'hn' => $validated['hn'],
+                'has_attachment' => (bool) $filePath,
+            ]);
 
             $record = DB::transaction(function () use ($validated, $citizenId, $filePath, $request) {
                 return MedicalRecordRequest::create([
@@ -50,6 +76,12 @@ class MedicalRecordRequestController extends Controller
                 ]);
             });
 
+            Log::debug('Medical record request stored', [
+                'request_id' => (string) $record->getKey(),
+                'ip_address' => $record->ip_address,
+                'has_attachment' => (bool) $filePath,
+            ]);
+
             return response()->json([
                 'ok' => true,
                 'id' => (string) $record->getKey(),
@@ -59,6 +91,12 @@ class MedicalRecordRequestController extends Controller
             if ($filePath) {
                 Storage::disk('local')->delete($filePath);
             }
+
+            Log::error('Failed to store medical record request', [
+                'ip_address' => $request->ip(),
+                'has_attachment' => (bool) $filePath,
+                'exception' => $exception,
+            ]);
 
             throw $exception;
         }
