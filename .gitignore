@@ -2,7 +2,8 @@
 backend/.env
 backend/vendor/
 backend/storage/
-backend/bootstrap/cache/
+backend/bootstrap/cache/*
+!backend/bootstrap/cache/.gitignore
 backend/database/*.sqlite
 backend/laravel/.env
 backend/laravel/vendor/
