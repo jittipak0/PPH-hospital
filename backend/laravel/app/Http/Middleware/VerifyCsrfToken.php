@@ -23,7 +23,7 @@ class VerifyCsrfToken extends Middleware
 
     protected function tokensMatch($request): bool
     {
-        if (! $this->isReading($request) && ! app()->runningUnitTests()) {
+        if (! $this->isReading($request)) {
             $requestedWith = $request->headers->get('X-Requested-With');
 
             if (strcasecmp((string) $requestedWith, 'XMLHttpRequest') !== 0) {

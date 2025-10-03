@@ -43,4 +43,28 @@ class HealthRiderApplicationSubmissionTest extends TestCase
         $this->assertTrue($application->consent);
         $this->assertSame('Mary Poppins', $application->full_name);
     }
+
+    public function test_consent_is_required(): void
+    {
+        Session::start();
+        $token = Session::token();
+
+        $response = $this
+            ->withSession(['_token' => $token])
+            ->withHeader('X-CSRF-TOKEN', $token)
+            ->withHeader('X-Requested-With', 'XMLHttpRequest')
+            ->postJson('/api/programs/health-rider/apply', [
+                'full_name' => 'Mary Poppins',
+                'address' => '456 Rider Road',
+                'district' => 'Central',
+                'province' => 'Bangkok',
+                'zipcode' => '10110',
+                'phone' => '0888888888',
+            ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonStructure([
+                'errors' => ['consent'],
+            ]);
+    }
 }

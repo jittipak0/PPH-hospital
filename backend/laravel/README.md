@@ -53,8 +53,11 @@ curl -sS -H "Accept: application/json" \
 
 ```bash
 composer lint
-php artisan test
+vendor/bin/pint --test
+php artisan test --coverage --min=85
 ```
+
+คำสั่ง `vendor/bin/pint --test` คือรูปแบบดั้งเดิมของ `composer lint` ช่วยให้รันเฉพาะ Pint ได้รวดเร็วเมื่อดีบักเฉพาะไฟล์ PHP ส่วน `php artisan test --coverage --min=85` จะพิมพ์สรุป coverage ทาง stdout และล้มเหลวทันทีหากต่ำกว่าเกณฑ์ 85% ตามนโยบาย QA
 
 ## ทดสอบ Auth เบื้องต้นด้วย `curl`
 1. ขอ CSRF token และ cookie

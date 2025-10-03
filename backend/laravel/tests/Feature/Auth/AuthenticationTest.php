@@ -100,6 +100,18 @@ class AuthenticationTest extends TestCase
             ]);
     }
 
+    public function test_me_requires_authentication(): void
+    {
+        $response = $this->getJson('/api/staff/me');
+
+        $response->assertUnauthorized()
+            ->assertJsonPath('error.code', 'AUTH_UNAUTHENTICATED')
+            ->assertJsonStructure([
+                'error' => ['code', 'message'],
+                'meta' => ['request_id'],
+            ]);
+    }
+
     public function test_logout_revokes_current_token(): void
     {
         $user = User::factory()->create([

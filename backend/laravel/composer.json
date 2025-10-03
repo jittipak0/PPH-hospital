@@ -54,7 +54,7 @@
         ],
         "format": "vendor/bin/pint",
         "lint": "vendor/bin/pint --test",
-        "test": "vendor/bin/phpunit"
+        "test": "XDEBUG_MODE=coverage /usr/bin/php artisan test --coverage --min=85"
     },
     "extra": {
         "laravel": {

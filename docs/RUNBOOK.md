@@ -9,6 +9,7 @@
 
 ## 2. Pre-deploy Checklist
 - [ ] PR ทั้งหมด merge เข้า `main` และผ่าน CI (lint, test, build)
+- [ ] รัน `vendor/bin/pint --test` และ `php artisan test --coverage --min=85` บน branch ปัจจุบัน ยืนยันว่า coverage ≥ 85%
 - [ ] อัปเดต `docs/CHANGELOG.md` ระบุฟีเจอร์/แก้ไข/ผลกระทบ
 - [ ] ตรวจสอบ Migration ใหม่และเตรียมแผน rollback (มีสำรองข้อมูลล่าสุด)
 - [ ] สร้าง/ตรวจสอบโฟลเดอร์ `storage/app/private/forms` ให้ web user เขียนได้ (เก็บไฟล์อัปโหลดจากฟอร์มสาธารณะ)

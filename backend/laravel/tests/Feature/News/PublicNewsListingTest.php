@@ -78,4 +78,14 @@ class PublicNewsListingTest extends TestCase
             $response->json('data.news.1.published_at')
         );
     }
+
+    public function test_invalid_sort_parameter_returns_validation_error(): void
+    {
+        $response = $this->getJson('/api/news?sort=invalid');
+
+        $response->assertUnprocessable()
+            ->assertJsonStructure([
+                'errors' => ['sort'],
+            ]);
+    }
 }

@@ -43,4 +43,25 @@ class DonationSubmissionTest extends TestCase
         $this->assertNotNull($donation);
         $this->assertSame($reference, $donation->reference_code);
     }
+
+    public function test_invalid_channel_returns_validation_error(): void
+    {
+        Session::start();
+        $token = Session::token();
+
+        $response = $this
+            ->withSession(['_token' => $token])
+            ->withHeader('X-CSRF-TOKEN', $token)
+            ->withHeader('X-Requested-With', 'XMLHttpRequest')
+            ->postJson('/api/forms/donation', [
+                'donor_name' => 'John Smith',
+                'amount' => 500,
+                'channel' => 'crypto',
+            ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonStructure([
+                'errors' => ['channel'],
+            ]);
+    }
 }

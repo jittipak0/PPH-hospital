@@ -55,4 +55,32 @@ class MedicalRecordRequestSubmissionTest extends TestCase
 
         Storage::disk('local')->assertExists($record->idcard_path);
     }
+
+    public function test_submission_rejects_invalid_file_type(): void
+    {
+        Storage::fake('local');
+        Session::start();
+        $token = Session::token();
+
+        $file = UploadedFile::fake()->create('idcard.txt', 200, 'text/plain');
+
+        $response = $this
+            ->withSession(['_token' => $token])
+            ->withHeader('X-CSRF-TOKEN', $token)
+            ->withHeader('X-Requested-With', 'XMLHttpRequest')
+            ->postJson('/api/forms/medical-record-request', [
+                'full_name' => 'Jane Doe',
+                'hn' => 'AB123',
+                'citizen_id' => '1234567890123',
+                'phone' => '0812345678',
+                'address' => '123 Example Street',
+                'consent' => 'yes',
+                'idcard_file' => $file,
+            ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonStructure([
+                'errors' => ['idcard_file'],
+            ]);
+    }
 }
