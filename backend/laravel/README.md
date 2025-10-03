@@ -35,6 +35,17 @@ curl -H "Accept: application/json" http://localhost:8000/api/health
 tail -f storage/logs/structured.log | jq '.'
 ```
 
+## ตัวอย่างเรียกข่าวสาธารณะ
+
+```bash
+curl -sS -H "Accept: application/json" \
+  "http://localhost:8000/api/news?per_page=5&sort=-published_at" | jq '.'
+```
+
+- `per_page` ปรับจำนวนรายการ (สูงสุด 50 ต่อหน้า)
+- `page` ระบุหน้าที่ต้องการ (เริ่มที่ 1)
+- `sort` เลือก `-published_at` (ค่าเริ่มต้น: ใหม่ล่าสุดก่อน) หรือ `published_at` (เก่าสุดก่อน)
+
 ทุกคำตอบของ API จะมี header `X-Request-Id` (หากไม่ส่งมาจะถูกสร้างให้) และถูกแนบเข้า context ของ log ทุกชั้น สามารถใช้ค่าเดียวกันเพื่อตามรอยคำสั่งซื้อทั้งใน response และ log
 
 ## การทดสอบ

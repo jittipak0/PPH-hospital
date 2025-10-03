@@ -1,12 +1,15 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Health;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class ExampleTest extends TestCase
+class HealthCheckTest extends TestCase
 {
-    public function test_the_application_returns_a_successful_response(): void
+    use RefreshDatabase;
+
+    public function test_health_endpoint_reports_status(): void
     {
         $response = $this->getJson('/api/health');
 

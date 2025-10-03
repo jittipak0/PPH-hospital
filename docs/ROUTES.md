@@ -23,9 +23,9 @@
 ## 1. เส้นทางสาธารณะ (Public API)
 | Method | Path | Auth | คำอธิบาย | พารามิเตอร์/หมายเหตุ | ตัวอย่าง Response |
 | --- | --- | --- | --- | --- | --- |
-| GET | `/health` | ไม่ต้องล็อกอิน | ตรวจสุขภาพระบบ Express API | ใช้สำหรับ monitoring และ uptime check | `{ "status": "ok", "timestamp": "2024-09-30T12:00:00.000Z" }` |
+| GET | `/api/health` | ไม่ต้องล็อกอิน | ตรวจสุขภาพระบบ Laravel API | ใช้สำหรับ monitoring และ uptime check | `{ "data": { "ok": true, "app": { "name": "PPH Hospital", "environment": "staging", "version": "11.0.0" }, "services": { "database": { "status": "ok", "connection": "sqlite" }, "queue": { "status": "ok", "connection": "sync" }, "storage": { "status": "ok", "disk": "local" } } }, "meta": { "request_id": "req-123", "timestamp": "2025-01-03T04:05:06Z" } }` |
 | GET | `/api/security/csrf-token` | ไม่ต้องล็อกอิน | ขอ CSRF token ใหม่ (cookie + ใช้ประกอบ header `X-CSRF-Token`) | ควรเรียกก่อนทุก POST/PUT/DELETE | `{ "csrfToken": "..." }` |
-| GET | `/api/news` | ไม่ต้องล็อกอิน | รายการข่าวประชาสัมพันธ์ทั้งหมด | Response `news` เป็น array ของ `{ id, title, summary, content, imageUrl, publishedAt, isFeatured, displayOrder }` | `{ "news": [ ... ] }` |
+| GET | `/api/news` | ไม่ต้องล็อกอิน | รายการข่าวประชาสัมพันธ์ทั้งหมด | รองรับ query `page`, `per_page (<=50)`, `sort` (`-published_at` เป็นค่าเริ่มต้น, `published_at` สำหรับเก่าสุดก่อน) | `{ "data": { "news": [ { "id": 1, "title": "Latest Update", "body": "รายละเอียด...", "published_at": "2025-01-01T12:00:00Z" } ], "pagination": { "current_page": 1, "per_page": 10, "total": 2, "last_page": 1 } }, "meta": { "request_id": "req-abc" } }` |
 | GET | `/api/news/featured` | ไม่ต้องล็อกอิน | รายการข่าวที่ติดดาว / แสดงหน้าแรก | เรียงตาม `displayOrder` แล้วตาม `publishedAt` | `{ "news": [ ... ] }` |
 | GET | `/api/policies/privacy` | ไม่ต้องล็อกอิน | ข้อความนโยบายความเป็นส่วนตัวฉบับล่าสุด | ใช้แสดงในหน้า onboarding/ยอมรับนโยบาย | `{ "policy": "โรงพยาบาลให้ความสำคัญ..." }` |
 | GET | `/api/policies/terms` | ไม่ต้องล็อกอิน | ข้อกำหนดการใช้งานระบบสารสนเทศ | ใช้ในหน้า Terms of Use | `{ "terms": "ระบบสารสนเทศภายในนี้..." }` |

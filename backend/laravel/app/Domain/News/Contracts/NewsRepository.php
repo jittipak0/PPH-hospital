@@ -7,7 +7,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface NewsRepository
 {
-    public function paginatePublished(int $perPage = 15): LengthAwarePaginator;
+    public function paginatePublished(int $perPage = 15, string $sort = '-published_at'): LengthAwarePaginator;
 
     public function find(int $id): ?News;
 

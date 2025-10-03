@@ -8,6 +8,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class NewsRepository implements NewsRepositoryContract
 {
@@ -23,18 +24,30 @@ class NewsRepository implements NewsRepositoryContract
         return $this->connection;
     }
 
-    public function paginatePublished(int $perPage = 15): LengthAwarePaginator
+    public function paginatePublished(int $perPage = 15, string $sort = '-published_at'): LengthAwarePaginator
     {
         $query = $this->query()
             ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->orderByDesc('published_at')
-            ->orderByDesc('id');
+            ->where('published_at', '<=', now());
+
+        $direction = Str::startsWith($sort, '-') ? 'desc' : 'asc';
+        $column = ltrim($sort, '-');
+
+        if (! in_array($column, ['published_at', 'created_at'], true)) {
+            $column = 'published_at';
+        }
+
+        $query->orderBy($column, $direction);
+
+        if ($column !== 'id') {
+            $query->orderByDesc('id');
+        }
 
         Log::debug('News pagination requested.', [
             'connection' => $this->connection,
             'per_page' => $perPage,
             'page' => Paginator::resolveCurrentPage(),
+            'sort' => $sort,
         ]);
 
         return $query->paginate($perPage);

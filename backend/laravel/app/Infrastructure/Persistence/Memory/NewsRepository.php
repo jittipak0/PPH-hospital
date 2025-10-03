@@ -10,6 +10,7 @@ use Illuminate\Pagination\Paginator as SimplePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class NewsRepository implements NewsRepositoryContract
 {
@@ -23,7 +24,7 @@ class NewsRepository implements NewsRepositoryContract
         // No-op for in-memory adapter.
     }
 
-    public function paginatePublished(int $perPage = 15): LengthAwarePaginator
+    public function paginatePublished(int $perPage = 15, string $sort = '-published_at'): LengthAwarePaginator
     {
         $now = Carbon::now();
         $all = collect($this->records)
@@ -32,12 +33,24 @@ class NewsRepository implements NewsRepositoryContract
 
                 return $publishedAt !== null && Carbon::parse($publishedAt) <= $now;
             })
-            ->sort(function (array $a, array $b): int {
-                $compare = strcmp((string) Arr::get($b, 'published_at', ''), (string) Arr::get($a, 'published_at', ''));
+            ->sort(function (array $a, array $b) use ($sort): int {
+                $direction = Str::startsWith($sort, '-') ? -1 : 1;
+                $column = ltrim($sort, '-');
 
-                return $compare !== 0
-                    ? $compare
-                    : ((int) Arr::get($b, 'id', 0) <=> (int) Arr::get($a, 'id', 0));
+                if (! in_array($column, ['published_at', 'created_at'], true)) {
+                    $column = 'published_at';
+                }
+
+                $first = (string) Arr::get($a, $column, '');
+                $second = (string) Arr::get($b, $column, '');
+
+                $comparison = $first <=> $second;
+
+                if ($comparison === 0) {
+                    return (int) Arr::get($b, 'id', 0) <=> (int) Arr::get($a, 'id', 0);
+                }
+
+                return $direction * $comparison;
             })
             ->values();
 
@@ -51,6 +64,7 @@ class NewsRepository implements NewsRepositoryContract
             'per_page' => $perPage,
             'page' => $currentPage,
             'total' => $all->count(),
+            'sort' => $sort,
         ]);
 
         return new Paginator(
