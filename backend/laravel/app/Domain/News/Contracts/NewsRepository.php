@@ -9,6 +9,8 @@ interface NewsRepository
 {
     public function paginatePublished(int $perPage = 15, string $sort = '-published_at'): LengthAwarePaginator;
 
+    public function paginateForStaff(int $perPage = 15, string $sort = '-published_at'): LengthAwarePaginator;
+
     public function find(int $id): ?News;
 
     public function save(News $news): void;

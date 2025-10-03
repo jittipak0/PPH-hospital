@@ -40,10 +40,10 @@
 ## 3. ข่าวและคอนเทนต์ภายใน
 | Method | Path | Auth (Role) | คำอธิบาย | Payload/Query | Response |
 | --- | --- | --- | --- | --- | --- |
-| GET | `/api/staff/news` | Bearer + (`staff`,`admin`,`doctor`,`nurse`) | ดึงข่าวทั้งหมดสำหรับแดชบอร์ดภายใน | - | 200 + `{ "news": [ { id, title, summary, content, imageUrl, publishedAt, isFeatured, displayOrder } ] }` |
-| POST | `/api/news` | Bearer + `admin` | สร้างข่าวใหม่ | `{ "title", "summary", "content", "imageUrl", "publishedAt?", "isFeatured?", "displayOrder?" }` (ผ่าน Zod validation) | 201 + `{ "news": { ... } }` |
-| PUT | `/api/news/{id}` | Bearer + `admin` | แก้ไขข่าว | ส่งเฉพาะฟิลด์ที่ต้องการอัปเดต (อย่างน้อย 1 ค่า) | 200 + `{ "news": { ... } }` หรือ 404 ถ้าไม่พบ |
-| DELETE | `/api/news/{id}` | Bearer + `admin` | ลบข่าว | - | 204 No Content |
+| GET | `/api/staff/news` | Bearer + (`staff`,`admin`) | ดึงข่าวทั้งหมดสำหรับแดชบอร์ดภายใน (รวมฉบับร่าง) | รองรับ query `page`, `per_page (<=50)`, `sort` (`-published_at` เป็นค่าเริ่มต้น) | 200 + `{ "data": { "news": [ { "id": 12, "title": "นโยบายใหม่", "summary": "เนื้อหา 120 ตัวอักษรแรก...", "body": "เนื้อหาฉบับเต็ม", "published_at": "2025-01-01T12:00:00Z", "created_at": "2025-01-01T10:00:00Z", "updated_at": "2025-01-01T10:00:00Z" } ], "pagination": { "current_page": 1, "per_page": 10, "total": 1, "last_page": 1 } }, "meta": { "request_id": "req-abc" } }` |
+| POST | `/api/staff/news` | Bearer + `admin` | สร้างข่าวใหม่ | Header: `X-CSRF-Token`, `X-Requested-With: XMLHttpRequest`<br>Body `{ "title": "หัวข้อ", "body?": "รายละเอียด", "published_at?": "2025-01-01T12:00:00Z" }` | 201 + `{ "data": { "id": 99, "title": "หัวข้อ", "summary": "ตัวอย่าง 120 ตัวอักษร...", "body": "รายละเอียด", "published_at": "2025-01-01T12:00:00Z", "created_at": "2025-01-02T04:05:06Z", "updated_at": "2025-01-02T04:05:06Z" }, "meta": { "request_id": "req-xyz" } }` |
+| PUT | `/api/staff/news/{id}` | Bearer + `admin` | แก้ไขข่าว | Header: `X-CSRF-Token`, `X-Requested-With`<br>Body `{ "title?": "อัปเดต", "body?": "รายละเอียดใหม่", "published_at?": null }` (ต้องมีอย่างน้อย 1 ฟิลด์) | 200 + `{ "data": { ... }, "meta": { "request_id" } }` หรือ 404 + `{ "error": { "message": "News article not found." }, "meta": { "request_id" } }` |
+| DELETE | `/api/staff/news/{id}` | Bearer + `admin` | ลบข่าว | Header: `X-CSRF-Token`, `X-Requested-With` | 204 No Content (404 หากไม่พบ) |
 
 ## 4. จัดการผู้ใช้ (Admin)
 | Method | Path | Auth (Role) | คำอธิบาย | Payload | Response |

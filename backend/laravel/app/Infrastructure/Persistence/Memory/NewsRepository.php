@@ -9,6 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 use Illuminate\Pagination\Paginator as SimplePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -27,53 +28,21 @@ class NewsRepository implements NewsRepositoryContract
     public function paginatePublished(int $perPage = 15, string $sort = '-published_at'): LengthAwarePaginator
     {
         $now = Carbon::now();
-        $all = collect($this->records)
+        $collection = collect($this->records)
             ->filter(function (array $attributes) use ($now): bool {
                 $publishedAt = Arr::get($attributes, 'published_at');
 
                 return $publishedAt !== null && Carbon::parse($publishedAt) <= $now;
-            })
-            ->sort(function (array $a, array $b) use ($sort): int {
-                $direction = Str::startsWith($sort, '-') ? -1 : 1;
-                $column = ltrim($sort, '-');
+            });
 
-                if (! in_array($column, ['published_at', 'created_at'], true)) {
-                    $column = 'published_at';
-                }
+        return $this->paginateCollection($collection, $perPage, $sort, 'public');
+    }
 
-                $first = (string) Arr::get($a, $column, '');
-                $second = (string) Arr::get($b, $column, '');
+    public function paginateForStaff(int $perPage = 15, string $sort = '-published_at'): LengthAwarePaginator
+    {
+        $collection = collect($this->records);
 
-                $comparison = $first <=> $second;
-
-                if ($comparison === 0) {
-                    return (int) Arr::get($b, 'id', 0) <=> (int) Arr::get($a, 'id', 0);
-                }
-
-                return $direction * $comparison;
-            })
-            ->values();
-
-        $currentPage = SimplePaginator::resolveCurrentPage();
-        $results = $all
-            ->forPage($currentPage, $perPage)
-            ->map(fn (array $attributes) => $this->mapToModel($attributes))
-            ->values();
-
-        Log::debug('Memory news pagination requested.', [
-            'per_page' => $perPage,
-            'page' => $currentPage,
-            'total' => $all->count(),
-            'sort' => $sort,
-        ]);
-
-        return new Paginator(
-            $results,
-            $all->count(),
-            $perPage,
-            $currentPage,
-            ['path' => SimplePaginator::resolveCurrentPath()]
-        );
+        return $this->paginateCollection($collection, $perPage, $sort, 'staff');
     }
 
     public function find(int $id): ?News
@@ -128,5 +97,55 @@ class NewsRepository implements NewsRepositoryContract
         return empty($this->records)
             ? 1
             : (max(array_keys($this->records)) + 1);
+    }
+
+    /**
+     * @param  Collection<int, array<string, mixed>>  $collection
+     */
+    protected function paginateCollection(Collection $collection, int $perPage, string $sort, string $context): LengthAwarePaginator
+    {
+        $sorted = $collection
+            ->sort(function (array $a, array $b) use ($sort): int {
+                $direction = Str::startsWith($sort, '-') ? -1 : 1;
+                $column = ltrim($sort, '-');
+
+                if (! in_array($column, ['published_at', 'created_at'], true)) {
+                    $column = 'published_at';
+                }
+
+                $first = (string) Arr::get($a, $column, '');
+                $second = (string) Arr::get($b, $column, '');
+
+                $comparison = $first <=> $second;
+
+                if ($comparison === 0) {
+                    return (int) Arr::get($b, 'id', 0) <=> (int) Arr::get($a, 'id', 0);
+                }
+
+                return $direction * $comparison;
+            })
+            ->values();
+
+        $currentPage = SimplePaginator::resolveCurrentPage();
+        $results = $sorted
+            ->forPage($currentPage, $perPage)
+            ->map(fn (array $attributes) => $this->mapToModel($attributes))
+            ->values();
+
+        Log::debug('Memory news pagination requested.', [
+            'context' => $context,
+            'per_page' => $perPage,
+            'page' => $currentPage,
+            'total' => $sorted->count(),
+            'sort' => $sort,
+        ]);
+
+        return new Paginator(
+            $results,
+            $sorted->count(),
+            $perPage,
+            $currentPage,
+            ['path' => SimplePaginator::resolveCurrentPath()]
+        );
     }
 }

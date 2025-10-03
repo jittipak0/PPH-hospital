@@ -30,20 +30,25 @@ class NewsRepository implements NewsRepositoryContract
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now());
 
-        $direction = Str::startsWith($sort, '-') ? 'desc' : 'asc';
-        $column = ltrim($sort, '-');
+        $this->applySort($query, $sort);
 
-        if (! in_array($column, ['published_at', 'created_at'], true)) {
-            $column = 'published_at';
-        }
+        Log::debug('News pagination requested for public feed.', [
+            'connection' => $this->connection,
+            'per_page' => $perPage,
+            'page' => Paginator::resolveCurrentPage(),
+            'sort' => $sort,
+        ]);
 
-        $query->orderBy($column, $direction);
+        return $query->paginate($perPage);
+    }
 
-        if ($column !== 'id') {
-            $query->orderByDesc('id');
-        }
+    public function paginateForStaff(int $perPage = 15, string $sort = '-published_at'): LengthAwarePaginator
+    {
+        $query = $this->query();
 
-        Log::debug('News pagination requested.', [
+        $this->applySort($query, $sort);
+
+        Log::debug('News pagination requested for staff dashboard.', [
             'connection' => $this->connection,
             'per_page' => $perPage,
             'page' => Paginator::resolveCurrentPage(),
@@ -97,5 +102,21 @@ class NewsRepository implements NewsRepositoryContract
         return $this->connection
             ? News::on($this->connection)
             : News::query();
+    }
+
+    protected function applySort(Builder $query, string $sort): void
+    {
+        $direction = Str::startsWith($sort, '-') ? 'desc' : 'asc';
+        $column = ltrim($sort, '-');
+
+        if (! in_array($column, ['published_at', 'created_at'], true)) {
+            $column = 'published_at';
+        }
+
+        $query->orderBy($column, $direction);
+
+        if ($column !== 'id') {
+            $query->orderByDesc('id');
+        }
     }
 }
