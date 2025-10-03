@@ -1,0 +1,844 @@
+{
+  "generatedAt": "2025-01-04T00:00:00Z",
+  "description": "Frontend API call inventory derived from manual review of src/lib/*.ts as of audit",
+  "endpoints": [
+    {
+      "source": "src/lib/formsApi.ts:52-78",
+      "name": "ensureCsrfToken",
+      "method": "GET",
+      "path": "/api/security/csrf-token",
+      "base": "VITE_API_BASE_URL || window.location.origin",
+      "query": {},
+      "headers": [
+        "X-Requested-With: XMLHttpRequest"
+      ],
+      "credentials": "include",
+      "body": null,
+      "response": {
+        "200": {
+          "shape": {
+            "csrfToken": "string"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/formsApi.ts:97-131",
+      "name": "submitMedicalRecordRequest",
+      "method": "POST",
+      "path": "/api/forms/medical-record-request",
+      "base": "VITE_API_BASE_URL || window.location.origin",
+      "query": {},
+      "headers": [
+        "X-Requested-With: XMLHttpRequest",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": {
+        "type": "multipart/form-data",
+        "fields": {
+          "full_name": {
+            "type": "string",
+            "required": true
+          },
+          "hn": {
+            "type": "string",
+            "required": true
+          },
+          "citizen_id": {
+            "type": "string",
+            "required": true
+          },
+          "phone": {
+            "type": "string",
+            "required": true
+          },
+          "email": {
+            "type": "string",
+            "required": true
+          },
+          "address": {
+            "type": "string",
+            "required": true
+          },
+          "reason": {
+            "type": "string",
+            "required": true
+          },
+          "consent": {
+            "type": "string",
+            "required": true,
+            "note": "Sent as '1' or '0'"
+          },
+          "idcard_file": {
+            "type": "file",
+            "required": false
+          }
+        }
+      },
+      "response": {
+        "201": {
+          "shape": {
+            "ok": "boolean",
+            "id": "string",
+            "message": "string"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/formsApi.ts:133-160",
+      "name": "submitDonation",
+      "method": "POST",
+      "path": "/api/forms/donation",
+      "base": "VITE_API_BASE_URL || window.location.origin",
+      "query": {},
+      "headers": [
+        "Content-Type: application/json",
+        "X-Requested-With: XMLHttpRequest",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": {
+        "type": "json",
+        "fields": {
+          "donor_name": {
+            "type": "string",
+            "required": true
+          },
+          "amount": {
+            "type": "number",
+            "required": true
+          },
+          "channel": {
+            "type": "string",
+            "required": true
+          },
+          "phone": {
+            "type": "string",
+            "required": true
+          },
+          "email": {
+            "type": "string",
+            "required": true
+          },
+          "note": {
+            "type": "string",
+            "required": false
+          }
+        }
+      },
+      "response": {
+        "201": {
+          "shape": {
+            "ok": "boolean",
+            "id": "string",
+            "message": "string"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/formsApi.ts:162-182",
+      "name": "submitSatisfactionSurvey",
+      "method": "POST",
+      "path": "/api/forms/satisfaction",
+      "base": "VITE_API_BASE_URL || window.location.origin",
+      "query": {},
+      "headers": [
+        "Content-Type: application/json",
+        "X-Requested-With: XMLHttpRequest",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": {
+        "type": "json",
+        "fields": {
+          "score_overall": {
+            "type": "number",
+            "required": true
+          },
+          "score_waittime": {
+            "type": "number",
+            "required": true
+          },
+          "score_staff": {
+            "type": "number",
+            "required": true
+          },
+          "comment": {
+            "type": "string",
+            "required": false
+          },
+          "service_date": {
+            "type": "string",
+            "required": true
+          }
+        }
+      },
+      "response": {
+        "201": {
+          "shape": {
+            "ok": "boolean",
+            "id": "string",
+            "message": "string"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/formsApi.ts:184-211",
+      "name": "submitHealthRiderApplication",
+      "method": "POST",
+      "path": "/api/programs/health-rider/apply",
+      "base": "VITE_API_BASE_URL || window.location.origin",
+      "query": {},
+      "headers": [
+        "Content-Type: application/json",
+        "X-Requested-With: XMLHttpRequest",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": {
+        "type": "json",
+        "fields": {
+          "full_name": {
+            "type": "string",
+            "required": true
+          },
+          "hn": {
+            "type": "string",
+            "required": true
+          },
+          "address": {
+            "type": "string",
+            "required": true
+          },
+          "district": {
+            "type": "string",
+            "required": true
+          },
+          "province": {
+            "type": "string",
+            "required": true
+          },
+          "zipcode": {
+            "type": "string",
+            "required": true
+          },
+          "phone": {
+            "type": "string",
+            "required": true
+          },
+          "line_id": {
+            "type": "string",
+            "required": false
+          },
+          "consent": {
+            "type": "boolean",
+            "required": true
+          }
+        }
+      },
+      "response": {
+        "201": {
+          "shape": {
+            "ok": "boolean",
+            "id": "string",
+            "message": "string"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/api.ts:244-278",
+      "name": "fetchNews",
+      "method": "GET",
+      "path": "/news",
+      "base": "VITE_PUBLIC_API || 'http://localhost:4000/api'",
+      "query": {},
+      "headers": [],
+      "credentials": "omit",
+      "body": null,
+      "response": {
+        "200": {
+          "shape": {
+            "news": [
+              {
+                "id": "string",
+                "title": "string",
+                "summary": "string",
+                "content": "string",
+                "publishedAt": "string",
+                "imageUrl": "string",
+                "isFeatured": "boolean",
+                "displayOrder": "number"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:32-47",
+      "name": "ensureCsrfToken",
+      "method": "GET",
+      "path": "/security/csrf-token",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "query": {},
+      "headers": [],
+      "credentials": "include",
+      "body": null,
+      "response": {
+        "200": {
+          "shape": {
+            "csrfToken": "string"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:64-76",
+      "name": "login",
+      "method": "POST",
+      "path": "/auth/login",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "query": {},
+      "headers": [
+        "Content-Type: application/json",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": {
+        "type": "json",
+        "fields": {
+          "username": {
+            "type": "string",
+            "required": true
+          },
+          "password": {
+            "type": "string",
+            "required": true
+          },
+          "acceptPolicies": {
+            "type": "boolean",
+            "required": true
+          },
+          "rememberMe": {
+            "type": "boolean",
+            "required": true
+          }
+        }
+      },
+      "response": {
+        "200": {
+          "shape": {
+            "accessToken": "string",
+            "refreshToken": "string",
+            "user": {
+              "id": "string",
+              "username": "string",
+              "role": "string",
+              "acceptedPolicies": "boolean",
+              "cid": "string|null",
+              "fullName": "string",
+              "department": "string|null",
+              "lastLoginAt": "string|null"
+            }
+          }
+        },
+        "401": {
+          "shape": {
+            "message": "string"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:77-86",
+      "name": "refresh",
+      "method": "POST",
+      "path": "/auth/refresh",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "query": {},
+      "headers": [
+        "Content-Type: application/json",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": {
+        "type": "json",
+        "fields": {
+          "refreshToken": {
+            "type": "string",
+            "required": true
+          }
+        }
+      },
+      "response": {
+        "200": {
+          "shape": {
+            "accessToken": "string",
+            "refreshToken": "string",
+            "user": "AuthenticatedUser"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:87-98",
+      "name": "logout",
+      "method": "POST",
+      "path": "/auth/logout",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "query": {},
+      "headers": [
+        "Content-Type: application/json",
+        "Authorization: Bearer <accessToken?>",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": {
+        "type": "json",
+        "fields": {
+          "refreshToken": {
+            "type": "string",
+            "required": false
+          }
+        }
+      },
+      "response": {
+        "200": {
+          "shape": {}
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:99-112",
+      "name": "fetchDoctorPatients",
+      "method": "GET",
+      "path": "/doctor/patients",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>"
+      ],
+      "credentials": "include",
+      "query": {},
+      "body": null,
+      "response": {
+        "200": {
+          "shape": {
+            "patients": [
+              {
+                "id": "string",
+                "name": "string",
+                "diagnosis": "string",
+                "updatedAt": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:113-121",
+      "name": "fetchNurseSchedules",
+      "method": "GET",
+      "path": "/nurse/schedules",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>"
+      ],
+      "credentials": "include",
+      "query": {},
+      "body": null,
+      "response": {
+        "200": {
+          "shape": {
+            "schedules": [
+              {
+                "id": "string",
+                "shiftDate": "string",
+                "shiftType": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:122-131",
+      "name": "fetchStaffNews",
+      "method": "GET",
+      "path": "/staff/news",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>"
+      ],
+      "credentials": "include",
+      "query": {},
+      "body": null,
+      "response": {
+        "200": {
+          "shape": {
+            "news": [
+              {
+                "id": "string",
+                "title": "string",
+                "content": "string",
+                "publishedAt": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:132-142",
+      "name": "listAllNews",
+      "method": "GET",
+      "path": "/news",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>"
+      ],
+      "credentials": "include",
+      "query": {},
+      "body": null,
+      "response": {
+        "200": {
+          "shape": {
+            "news": "NewsItem[]"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:143-152",
+      "name": "createNews",
+      "method": "POST",
+      "path": "/news",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>",
+        "Content-Type: application/json",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": {
+        "type": "json",
+        "fields": {
+          "title": {
+            "type": "string",
+            "required": true
+          },
+          "summary": {
+            "type": "string",
+            "required": true
+          },
+          "content": {
+            "type": "string",
+            "required": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "required": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "required": false
+          },
+          "isFeatured": {
+            "type": "boolean",
+            "required": false
+          },
+          "displayOrder": {
+            "type": "number",
+            "required": false
+          }
+        }
+      },
+      "response": {
+        "201": {
+          "shape": {
+            "news": "NewsItem"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:153-164",
+      "name": "updateNews",
+      "method": "PUT",
+      "path": "/news/{id}",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>",
+        "Content-Type: application/json",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": {
+        "type": "json",
+        "fields": {
+          "title": {
+            "type": "string",
+            "required": false
+          },
+          "summary": {
+            "type": "string",
+            "required": false
+          },
+          "content": {
+            "type": "string",
+            "required": false
+          },
+          "imageUrl": {
+            "type": "string",
+            "required": false
+          },
+          "publishedAt": {
+            "type": "string",
+            "required": false
+          },
+          "isFeatured": {
+            "type": "boolean",
+            "required": false
+          },
+          "displayOrder": {
+            "type": "number",
+            "required": false
+          }
+        }
+      },
+      "response": {
+        "200": {
+          "shape": {
+            "news": "NewsItem"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:165-173",
+      "name": "deleteNews",
+      "method": "DELETE",
+      "path": "/news/{id}",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": null,
+      "response": {
+        "204": {
+          "shape": null
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:174-180",
+      "name": "listUsers",
+      "method": "GET",
+      "path": "/users",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>"
+      ],
+      "credentials": "include",
+      "query": {},
+      "body": null,
+      "response": {
+        "200": {
+          "shape": {
+            "users": "AuthenticatedUser[]"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:181-190",
+      "name": "createUser",
+      "method": "POST",
+      "path": "/users",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>",
+        "Content-Type: application/json",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": {
+        "type": "json",
+        "fields": {
+          "username": {
+            "type": "string",
+            "required": true
+          },
+          "password": {
+            "type": "string",
+            "required": true
+          },
+          "role": {
+            "type": "string",
+            "required": true
+          }
+        }
+      },
+      "response": {
+        "201": {
+          "shape": {
+            "user": "AuthenticatedUser"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:191-200",
+      "name": "updateUser",
+      "method": "PUT",
+      "path": "/users/{id}",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>",
+        "Content-Type: application/json",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": {
+        "type": "json",
+        "fields": {
+          "password": {
+            "type": "string",
+            "required": false
+          },
+          "role": {
+            "type": "string",
+            "required": false
+          },
+          "acceptedPolicies": {
+            "type": "boolean",
+            "required": false
+          }
+        }
+      },
+      "response": {
+        "200": {
+          "shape": {
+            "user": "AuthenticatedUser"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:201-204",
+      "name": "deleteUser",
+      "method": "DELETE",
+      "path": "/users/{id}",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": null,
+      "response": {
+        "204": {
+          "shape": null
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:205-213",
+      "name": "listAuditLogs",
+      "method": "GET",
+      "path": "/users/logs/audit",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>"
+      ],
+      "credentials": "include",
+      "query": {},
+      "body": null,
+      "response": {
+        "200": {
+          "shape": {
+            "logs": [
+              {
+                "id": "string",
+                "action": "string",
+                "ip": "string|null",
+                "createdAt": "string",
+                "username": "string|null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:214-222",
+      "name": "deleteAccount",
+      "method": "DELETE",
+      "path": "/account",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [
+        "Authorization: Bearer <accessToken>",
+        "Content-Type: application/json",
+        "X-CSRF-Token: <cached token>"
+      ],
+      "credentials": "include",
+      "body": {
+        "type": "json",
+        "fields": {
+          "password": {
+            "type": "string",
+            "required": true
+          }
+        }
+      },
+      "response": {
+        "200": {
+          "shape": {}
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:223-227",
+      "name": "fetchPrivacyPolicy",
+      "method": "GET",
+      "path": "/policies/privacy",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [],
+      "credentials": "include",
+      "query": {},
+      "body": null,
+      "response": {
+        "200": {
+          "shape": {
+            "policy": "string"
+          }
+        }
+      }
+    },
+    {
+      "source": "src/lib/secureApi.ts:228-231",
+      "name": "fetchTerms",
+      "method": "GET",
+      "path": "/policies/terms",
+      "base": "VITE_SECURE_API || 'http://localhost:4000/api'",
+      "headers": [],
+      "credentials": "include",
+      "query": {},
+      "body": null,
+      "response": {
+        "200": {
+          "shape": {
+            "terms": "string"
+          }
+        }
+      }
+    }
+  ]
+}
