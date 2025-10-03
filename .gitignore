@@ -2,8 +2,15 @@
 backend/.env
 backend/vendor/
 backend/storage/
-backend/bootstrap/cache/
+backend/bootstrap/cache/*
+!backend/bootstrap/cache/.gitignore
 backend/database/*.sqlite
+backend/laravel/.env
+backend/laravel/vendor/
+backend/laravel/storage/
+backend/laravel/bootstrap/cache/
+backend/laravel/public/storage
+backend/laravel/database/*.sqlite
 
 # Express secure backend
 backend/express/node_modules/

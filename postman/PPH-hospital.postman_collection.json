@@ -1,0 +1,326 @@
+{
+  "info": {
+    "name": "PPH Hospital API",
+    "description": "Collection สำหรับทดสอบ Laravel backend (health, auth, staff news, public forms)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/health",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "health" ]
+        }
+      }
+    },
+    {
+      "name": "Get CSRF Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json && json.data && json.data.csrf_token) {",
+              "  pm.environment.set('csrf_token', json.data.csrf_token);",
+              "}",
+              "const xsrfCookie = pm.cookies.get('XSRF-TOKEN');",
+              "if (xsrfCookie) { pm.environment.set('xsrf_cookie', xsrfCookie); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/security/csrf-token",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "security", "csrf-token" ]
+        }
+      }
+    },
+    {
+      "name": "Public News",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/news?per_page=10",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "news" ],
+          "query": [
+            { "key": "per_page", "value": "10" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Auth Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json && json.data && json.data.token) {",
+              "  pm.environment.set('access_token', json.data.token.access_token);",
+              "  pm.environment.set('token_type', json.data.token.token_type || 'Bearer');",
+              "}",
+              "if (json && json.data && json.data.user) {",
+              "  pm.environment.set('user_role', json.data.user.role);",
+              "}",
+              "pm.test('Login success', function () {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+          { "key": "X-Requested-With", "value": "XMLHttpRequest" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"ChangeMe123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "auth", "login" ]
+        }
+      }
+    },
+    {
+      "name": "Auth Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "{{token_type}} {{access_token}}" },
+          { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+          { "key": "X-Requested-With", "value": "XMLHttpRequest" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/auth/logout",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "auth", "logout" ]
+        }
+      }
+    },
+    {
+      "name": "Staff Me",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "{{token_type}} {{access_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/staff/me",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "staff", "me" ]
+        }
+      }
+    },
+    {
+      "name": "Staff News – List",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "{{token_type}} {{access_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/staff/news?per_page=10",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "staff", "news" ],
+          "query": [
+            { "key": "per_page", "value": "10" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Staff News – Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "{{token_type}} {{access_token}}" },
+          { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+          { "key": "X-Requested-With", "value": "XMLHttpRequest" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"ประกาศทดสอบ\",\n  \"body\": \"รายละเอียดข่าว...\",\n  \"published_at\": \"2025-01-05T00:00:00+07:00\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/staff/news",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "staff", "news" ]
+        }
+      }
+    },
+    {
+      "name": "Staff News – Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "{{token_type}} {{access_token}}" },
+          { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+          { "key": "X-Requested-With", "value": "XMLHttpRequest" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"ประกาศทดสอบ (แก้ไข)\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/staff/news/{{news_id}}",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "staff", "news", "{{news_id}}" ]
+        }
+      }
+    },
+    {
+      "name": "Staff News – Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "{{token_type}} {{access_token}}" },
+          { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+          { "key": "X-Requested-With", "value": "XMLHttpRequest" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/staff/news/{{news_id}}",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "staff", "news", "{{news_id}}" ]
+        }
+      }
+    },
+    {
+      "name": "Form – Medical Record Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+          { "key": "X-Requested-With", "value": "XMLHttpRequest" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "full_name", "value": "Jane Doe", "type": "text" },
+            { "key": "hn", "value": "AB1234", "type": "text" },
+            { "key": "citizen_id", "value": "1234567890123", "type": "text" },
+            { "key": "phone", "value": "0812345678", "type": "text" },
+            { "key": "email", "value": "jane@example.com", "type": "text" },
+            { "key": "address", "value": "123 Example Road", "type": "text" },
+            { "key": "reason", "value": "Follow-up", "type": "text" },
+            { "key": "consent", "value": "true", "type": "text" },
+            { "key": "idcard_file", "src": "{{idcard_file}}", "type": "file" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/forms/medical-record-request",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "forms", "medical-record-request" ]
+        }
+      }
+    },
+    {
+      "name": "Form – Donation",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+          { "key": "X-Requested-With", "value": "XMLHttpRequest" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"donor_name\": \"John Smith\",\n  \"amount\": 500,\n  \"channel\": \"bank\",\n  \"phone\": \"0999999999\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/forms/donation",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "forms", "donation" ]
+        }
+      }
+    },
+    {
+      "name": "Form – Satisfaction Survey",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+          { "key": "X-Requested-With", "value": "XMLHttpRequest" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"score_overall\": 5,\n  \"score_waittime\": 4,\n  \"score_staff\": 5,\n  \"comment\": \"Great service\",\n  \"service_date\": \"2025-01-01\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/forms/satisfaction",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "forms", "satisfaction" ]
+        }
+      }
+    },
+    {
+      "name": "Form – Health Rider Apply",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-CSRF-TOKEN", "value": "{{csrf_token}}" },
+          { "key": "X-Requested-With", "value": "XMLHttpRequest" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Mary Poppins\",\n  \"hn\": \"HR456\",\n  \"address\": \"456 Rider Road\",\n  \"district\": \"Central\",\n  \"province\": \"Bangkok\",\n  \"zipcode\": \"10110\",\n  \"phone\": \"0888888888\",\n  \"line_id\": \"mary-line\",\n  \"consent\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/programs/health-rider/apply",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "programs", "health-rider", "apply" ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "csrf_token", "value": "" },
+    { "key": "xsrf_cookie", "value": "" },
+    { "key": "access_token", "value": "" },
+    { "key": "token_type", "value": "Bearer" },
+    { "key": "news_id", "value": "1" },
+    { "key": "idcard_file", "value": "" }
+  ]
+}
