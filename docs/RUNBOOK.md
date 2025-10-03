@@ -42,7 +42,7 @@
 4. ตรวจ log สั้น ๆ ว่าไม่มี error เพิ่ม (`/var/log/nginx/error.log`, `/var/log/php8.2-fpm.log`)
 
 ## 4. หลัง Deploy (Post-deploy)
-- ตรวจ endpoint สำคัญ: `GET /api/health`, `GET /api/news`, `POST /api/auth/login`
+- ตรวจ endpoint สำคัญ: `GET /api/health` (Laravel API ควรตอบ `{ "ok": true, "request_id": "..." }`), `GET /api/news`, `POST /api/auth/login`
 - ตรวจหน้าเว็บหลักและการโหลดข่าวใน frontend
 - ยืนยันว่า metric/monitoring (APM, uptime robot) แสดงค่าปกติ
 - อัปเดตช่องทางสื่อสารแจ้งว่า deploy เสร็จ พร้อมลิงก์ release note
@@ -68,6 +68,11 @@
 - ทดสอบการกู้คืนข้อมูลบน staging ทุกไตรมาสและอัปเดตเอกสารผลลัพธ์
 - ตรวจสอบการหมดอายุของ TLS certificate ก่อนถึงกำหนด 30 วัน
 - ตรวจสอบ security patch ของ Laravel, PHP, Node.js ทุกเดือน และวางแผนอัปเดต
+
+## 11. Health Check และ Log Observability (Laravel API)
+- Health check backend: `curl -H "Accept: application/json" https://<host>/api/health` → ค่าที่ได้ต้องเป็น `{ "ok": true, "request_id": "..." }`
+- ตรวจ log ที่เพิ่ม context (`request_id`, `user_id`, `ip`, `user_agent`): `cd backend/laravel && tail -f storage/logs/structured.log | jq '.'`
+- หากต้อง trace ตามคำขอเฉพาะ ให้ค้นด้วย `jq 'select(.extra.request_id == "<id>")' storage/logs/structured.log`
 
 ## 10. การจัดการฐานข้อมูลและการสลับ driver
 - **เปิดใช้ MySQL/PGSQL ใน production:**

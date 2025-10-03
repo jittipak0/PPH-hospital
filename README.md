@@ -72,3 +72,36 @@ php artisan test                           # หรือ vendor/bin/phpunit
 - ทดสอบ unit ของ use case: `php artisan test --testsuite=Unit`
 
 ขั้นตอน deployment และ runbook เพิ่มเติมอธิบายไว้ใน [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
+
+## Laravel API Backend (Laravel 11)
+
+โฟลเดอร์ `backend/laravel` เป็นโครง Laravel 11 แบบ API only พร้อม Sanctum, middleware สำหรับกำหนด `X-Request-Id` และ logging ที่ดึง context ของคำขออัตโนมัติ
+
+### เตรียมสภาพแวดล้อม
+```bash
+cd backend/laravel
+cp .env.example .env
+composer install
+php artisan key:generate
+```
+
+### รันเซิร์ฟเวอร์พัฒนา
+```bash
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+### ตรวจสอบโค้ดและทดสอบ
+```bash
+composer lint
+composer format
+php artisan test
+```
+
+### สังเกตการณ์และตรวจสุขภาพ
+- ตรวจ health check: `curl -H "Accept: application/json" http://localhost:8000/api/health`
+- ทุก response จะมี header `X-Request-Id` สามารถส่งมากับคำขอเองหรือให้ระบบสร้างให้ และค่าจะสะท้อนใน log
+- ดู log แบบ JSON: `tail -f storage/logs/structured.log | jq '.'`
+
+### สลับ datastore
+- `.env` ใช้ `DATASTORE_DRIVER=memory` สำหรับการพัฒนา/ทดสอบ, เปลี่ยนเป็น `eloquent` เมื่อเชื่อมฐานข้อมูลจริง
+- ปรับ `DATASTORE_CONNECTION` ให้ตรงกับ alias ใน `config/database.php`
