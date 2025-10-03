@@ -10,6 +10,15 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
+    /**
+     * Map user roles to Sanctum token abilities.
+     */
+    private const ROLE_ABILITIES = [
+        'viewer' => ['viewer'],
+        'staff' => ['viewer', 'staff'],
+        'admin' => ['viewer', 'staff', 'admin'],
+    ];
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -19,9 +28,12 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'username',
         'name',
         'email',
+        'role',
         'password',
+        'last_login_at',
     ];
 
     /**
@@ -43,7 +55,18 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Resolve abilities to assign to newly issued tokens.
+     *
+     * @return list<string>
+     */
+    public function abilities(): array
+    {
+        return self::ROLE_ABILITIES[$this->role] ?? self::ROLE_ABILITIES['viewer'];
     }
 }

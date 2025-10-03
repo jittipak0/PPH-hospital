@@ -1,66 +1,105 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel API Backend – Bootstrap & Security Baseline
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+โครงการนี้เป็น Laravel 11 (API only) ที่เตรียม middleware สำหรับ `X-Request-Id`, logging เชิงโครงสร้าง, การเลือก datastore ตาม `DATASTORE_DRIVER`, และมาตรฐานความปลอดภัยเบื้องต้น (Sanctum token abilities, CSRF, rate limit) ให้พร้อมต่อยอดฟีเจอร์ถัดไป
 
-## About Laravel
+## การติดตั้ง
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+```bash
+cd backend/laravel
+cp .env.example .env
+composer install
+php artisan key:generate
+php artisan migrate        # เมื่อใช้ driver = eloquent
+php artisan vendor:publish --provider="Laravel\\Sanctum\\SanctumServiceProvider"
+```
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### ตัวแปรสำคัญใน `.env`
+- `DATASTORE_DRIVER` = `memory` (dev/test) หรือ `eloquent` (staging/prod)
+- `DATASTORE_CONNECTION` = alias ใน `config/database.php`
+- `SANCTUM_STATEFUL_DOMAINS` = โดเมนที่แชร์ cookie กับ SPA
+- `RATE_LIMIT_PUBLIC`, `RATE_LIMIT_STAFF`, `RATE_LIMIT_AUTH_LOGIN_ATTEMPTS`, `RATE_LIMIT_AUTH_LOGIN_DECAY`
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## การรันและตรวจสอบ
 
-## Learning Laravel
+```bash
+php artisan serve --host=0.0.0.0 --port=8000
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+ตรวจสุขภาพระบบและล็อก
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```bash
+curl -H "Accept: application/json" http://localhost:8000/api/health
+# log โครงสร้าง JSON พร้อม request context
+tail -f storage/logs/structured.log | jq '.'
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+ทุกคำตอบของ API จะมี header `X-Request-Id` (หากไม่ส่งมาจะถูกสร้างให้) และถูกแนบเข้า context ของ log ทุกชั้น สามารถใช้ค่าเดียวกันเพื่อตามรอยคำสั่งซื้อทั้งใน response และ log
 
-## Laravel Sponsors
+## การทดสอบ
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+composer lint
+php artisan test
+```
 
-### Premium Partners
+## ทดสอบ Auth เบื้องต้นด้วย `curl`
+1. ขอ CSRF cookie และดึงค่า token จากไฟล์ cookie
+   ```bash
+   curl -s -c cookies.txt http://localhost:8000/sanctum/csrf-cookie
+   export CSRF_TOKEN=$(grep XSRF-TOKEN cookies.txt | tail -n 1 | awk '{print $7}')
+   ```
+2. เรียก `POST /api/auth/login` (ตัวอย่าง user จาก seeder: `admin` / `ChangeMe123!`)
+   ```bash
+   curl -sS -b cookies.txt -c cookies.txt \
+     -H "Content-Type: application/json" \
+     -H "X-CSRF-TOKEN: $CSRF_TOKEN" \
+     -H "X-Requested-With: XMLHttpRequest" \
+     -X POST http://localhost:8000/api/auth/login \
+     -d '{"username":"admin","password":"ChangeMe123!"}' | tee login.json | jq '.'
+   ```
+3. ใช้ token ที่ได้เพื่อเรียกดูโปรไฟล์ staff
+   ```bash
+   export ACCESS_TOKEN=$(jq -r '.data.token.access_token' login.json)
+   curl -sS -H "Authorization: Bearer $ACCESS_TOKEN" \
+     -H "Accept: application/json" \
+     http://localhost:8000/api/staff/me | jq '.'
+   ```
+4. ออกจากระบบ (แนบ header เดิมและ cookie ชุดเดียวกัน)
+   ```bash
+   export CSRF_TOKEN=$(grep XSRF-TOKEN cookies.txt | tail -n 1 | awk '{print $7}')
+   curl -sS -b cookies.txt -c cookies.txt \
+     -H "Content-Type: application/json" \
+     -H "X-CSRF-TOKEN: $CSRF_TOKEN" \
+     -H "X-Requested-With: XMLHttpRequest" \
+     -H "Authorization: Bearer $ACCESS_TOKEN" \
+     -X POST http://localhost:8000/api/auth/logout | jq '.'
+   ```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+> หมายเหตุ: เก็บไฟล์ cookie และ token ไว้ในที่ปลอดภัย ห้าม commit และห้าม log ค่า credential ลงไฟล์ log
 
-## Contributing
+## Rate Limit และสิทธิ์การเข้าถึง
+- `throttle:public-api` ครอบคลุม endpoint สาธารณะ (ค่าเริ่มต้น 60/min/IP)
+- `throttle:staff-api` ใช้กับ route ที่ต้องการ `auth:sanctum` (120/min/user)
+- `throttle:auth-login` จำกัดการ login (20 ครั้ง/5 นาที/IP + username)
+- Token abilities: `viewer ⊂ staff ⊂ admin` (ระบุใน `auth.token_abilities`)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## โครงสร้าง Log
+- Middleware → Controller → Service จะ log ระดับ `debug` โดยมี context: `request_id`, `ip`, `user_agent`, `user_id` (ถ้ามี)
+- หลีกเลี่ยงการ log PII/credential ทุกกรณี หากต้องอ้างอิง username จะใช้ค่า hash (`sha256 + APP_KEY`)
+- เปลี่ยนระดับ log ผ่าน `.env` (`LOG_LEVEL`) ได้ตามสภาพแวดล้อม
 
-## Code of Conduct
+## สลับ datastore
+```bash
+# memory (dev/test)
+DATASTORE_DRIVER=memory
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# eloquent + sqlite (staging/prod เริ่มต้น)
+DATASTORE_DRIVER=eloquent
+DATASTORE_CONNECTION=sqlite
+php artisan migrate --force
+```
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Troubleshooting
+- 419 / CSRF: ตรวจว่ามี `X-Requested-With: XMLHttpRequest`, header `X-CSRF-TOKEN` และ cookie จาก `/sanctum/csrf-cookie`
+- 401: ตรวจ rate limit (`429`) และความถูกต้องของ token + abilities
+- ล็อกเห็น `Session store not set`: ตรวจ `SESSION_DRIVER` และว่ามี StartSession middleware (คอนฟิกไว้แล้วสำหรับกลุ่ม `api`)

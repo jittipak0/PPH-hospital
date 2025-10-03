@@ -20,6 +20,10 @@
 | DB_USERNAME | ผู้ใช้ฐานข้อมูล | `hospital_app` | จำกัดสิทธิ์เฉพาะ CRUD |
 | DB_PASSWORD | รหัสผ่านฐานข้อมูล | `********` | เก็บใน secret manager |
 | SANCTUM_STATEFUL_DOMAINS | รายการโดเมนที่แชร์ cookie | `hospital.local,localhost` | จำเป็นเมื่อ frontend ใช้ cookie-based auth |
+| RATE_LIMIT_PUBLIC | เพดานคำขอสาธารณะ (requests/min/ip) | `60` | ใช้กับ endpoint สาธารณะทุกตัว |
+| RATE_LIMIT_STAFF | เพดานคำขอฝั่ง staff (requests/min/user) | `120` | ใช้กับ route ที่ต้อง auth:sanctum |
+| RATE_LIMIT_AUTH_LOGIN_ATTEMPTS | จำนวนครั้ง login ที่อนุญาต | `20` | นับรวมทุกบทบาทต่อไอพี |
+| RATE_LIMIT_AUTH_LOGIN_DECAY | รีเซ็ต rate limit (นาที) | `5` | ใช้คู่กับค่า attempts ข้างต้น |
 | SESSION_DRIVER | ตัวจัดการ session | `cookie` หรือ `file` | API-only สามารถตั้งเป็น `cookie` |
 | CACHE_DRIVER | ตัวจัดการแคช | `file` / `redis` | เปิด redis ใน production เพื่อประสิทธิภาพ |
 | QUEUE_CONNECTION | งานคิว | `sync` (dev) / `redis` (prod) | หากใช้ queue worker ให้ตั้ง systemd เพิ่ม |

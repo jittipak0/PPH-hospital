@@ -8,7 +8,8 @@
 - ปิด `APP_DEBUG` ใน production และไม่ส่ง stack trace กลับไปยังผู้ใช้
 - ตรวจสอบ input ทุกจุดด้วย Laravel Form Request + escape output ใน frontend เพื่อป้องกัน XSS/SQL Injection
 - ใช้ Sanctum token abilities (`viewer`, `staff`, `admin`) และตรวจสอบสิทธิ์ใน policy/service ทุกครั้ง
-- เปิด rate limit สำหรับ endpoint สำคัญ เช่น login, news CRUD (เช่น `60 requests/min/user`)
+- กำหนด Sanctum token abilities (`viewer`, `staff`, `admin`) ผ่าน service container และอ้างอิงเฉพาะความสามารถที่จำเป็นในแต่ละ route
+- เปิด rate limit สำหรับ endpoint สำคัญ (ค่าเริ่มต้น: `RATE_LIMIT_PUBLIC=60`, `RATE_LIMIT_STAFF=120`, `RATE_LIMIT_AUTH_LOGIN_ATTEMPTS=20`/`RATE_LIMIT_AUTH_LOGIN_DECAY=5`)
 - จัดการไฟล์อัปโหลด: ตรวจ MIME/ขนาดไฟล์ เก็บนอก webroot และสแกนไวรัสก่อนให้ดาวน์โหลด
 - ฟอร์มสาธารณะ (เวชระเบียน/บริจาค/ประเมิน/Health Rider) ต้องเรียก CSRF token ก่อนส่ง, ตรวจสอบ `X-Requested-With`, และใช้ rate limit `throttle:public-forms`
 - จัดการ dependency ด้วย Dependabot/Renovate และตรวจสอบช่องโหว่ผ่าน `npm audit` / `composer audit`
@@ -21,6 +22,8 @@
 - หมุนรหัสผ่าน/secret ของ service account อย่างน้อยทุก 90 วัน หรือทันทีที่มีเหตุสงสัยว่าจะรั่วไหล พร้อมอัปเดต secret manager
 - บันทึกการเข้าถึงข้อมูลสำคัญ (audit trail) เพื่อรองรับการตรวจสอบย้อนหลัง
 - กำหนดนโยบาย retention และลบข้อมูลที่หมดอายุหรือไม่ได้ใช้งาน
+- CSRF สำหรับ public forms และ auth ต้องอ่าน token จาก `/sanctum/csrf-cookie` (ชั่วคราวก่อน endpoint `/api/security/csrf-token`) แล้วแนบ header `X-CSRF-TOKEN` พร้อม `X-Requested-With: XMLHttpRequest`
+- หลีกเลี่ยงการ log ค่า credential หรือ token ใช้ hash (`sha256 + APP_KEY`) หากจำเป็นต้องอ้างอิง identifier
 
 ## 3. โครงสร้างพื้นฐาน
 - ใช้ firewall จำกัดการเข้าถึงพอร์ต (อนุญาตเฉพาะ 80/443 สำหรับสาธารณะ, 22 สำหรับ IP ที่อนุญาต)
